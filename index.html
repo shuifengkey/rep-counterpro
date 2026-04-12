@@ -12,924 +12,936 @@
 <link rel="manifest" id="manifestLink">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --bg2: #111111;
-    --bg3: #1a1a1a;
-    --border: #2a2a2a;
-    --accent: #ff3d00;
-    --accent2: #ff6d00;
-    --gold: #ffd600;
-    --green: #00e676;
-    --text: #f5f5f5;
-    --muted: #666;
-    --panel: #141414;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    height: 100dvh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
-
-  /* Noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 1000;
-  }
-
-  /* ===== HEADER ===== */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px 8px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .app-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    line-height: 1;
-  }
-
-  .app-title span { color: var(--text); }
-
-  .header-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .icon-btn {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    color: var(--text);
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-
-  .icon-btn:active { transform: scale(0.92); background: var(--border); }
-  .icon-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(255,61,0,0.1); }
-
-  /* ===== STATS BAR ===== */
-  .stats-bar {
-    display: flex;
-    gap: 0;
-    padding: 0 16px;
-    margin: 10px 0 6px;
-    flex-shrink: 0;
-  }
-
-  .stat-chip {
-    flex: 1;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 0;
-    padding: 7px 6px;
-    text-align: center;
-  }
-
-  .stat-chip:first-child { border-radius: 8px 0 0 8px; }
-  .stat-chip:last-child { border-radius: 0 8px 8px 0; }
-  .stat-chip + .stat-chip { border-left: none; }
-
-  .stat-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    line-height: 1;
-    color: var(--gold);
-  }
-
-  .stat-val.green { color: var(--green); }
-  .stat-val.accent { color: var(--accent); }
-
-  .stat-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  /* ===== PROGRESS BAR ===== */
-  .progress-wrap {
-    padding: 0 16px 8px;
-    flex-shrink: 0;
-  }
-
-  .progress-track {
-    height: 4px;
-    background: var(--bg3);
-    border-radius: 2px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--gold));
-    border-radius: 2px;
-    transition: width 0.3s ease;
-    width: 0%;
-  }
-
-  /* ===== MAIN AREA ===== */
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0 16px 8px;
-    position: relative;
-    gap: 16px;
-    min-height: 0;
-  }
-
-  /* Big rep display */
-  .rep-display {
-    text-align: center;
-    position: relative;
-  }
-
-  .rep-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-
-  .rep-number {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(90px, 22vw, 140px);
-    line-height: 0.85;
-    color: var(--text);
-    transition: color 0.1s;
-    position: relative;
-    text-shadow: 0 0 60px rgba(255,61,0,0);
-    transition: text-shadow 0.2s, color 0.1s, transform 0.05s;
-  }
-
-  .rep-number.flash {
-    color: var(--accent);
-    text-shadow: 0 0 40px rgba(255,61,0,0.5);
-    transform: scale(1.04);
-  }
-
-  .rep-of {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    letter-spacing: 1px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .rep-of span { color: var(--gold); }
-
-  /* ===== TAP BUTTON ===== */
-  .tap-btn-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .tap-ripple {
-    position: absolute;
-    width: 170px;
-    height: 170px;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    opacity: 0;
-    pointer-events: none;
-    animation: none;
-  }
-
-  @keyframes rippleOut {
-    0% { transform: scale(1); opacity: 0.6; }
-    100% { transform: scale(1.8); opacity: 0; }
-  }
-
-  .tap-ripple.go { animation: rippleOut 0.5s ease-out forwards; }
-
-  .tap-btn {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #2a1a1a, #1a0a0a);
-    border: 3px solid var(--accent);
-    box-shadow:
-      0 0 0 6px rgba(255,61,0,0.08),
-      0 0 40px rgba(255,61,0,0.15),
-      inset 0 1px 0 rgba(255,255,255,0.05);
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    transition: all 0.08s;
-    position: relative;
-    z-index: 2;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .tap-btn:active, .tap-btn.pressed {
-    transform: scale(0.94);
-    border-color: var(--gold);
-    box-shadow:
-      0 0 0 8px rgba(255,61,0,0.12),
-      0 0 60px rgba(255,61,0,0.3),
-      inset 0 2px 8px rgba(0,0,0,0.5);
-  }
-
-  .tap-btn-icon {
-    font-size: 36px;
-    line-height: 1;
-  }
-
-  .tap-btn-text {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 3px;
-    color: var(--accent);
-  }
-
-  .tap-btn.resting {
-    border-color: var(--green);
-    box-shadow: 0 0 30px rgba(0,230,118,0.2), 0 0 0 6px rgba(0,230,118,0.08);
-  }
-
-  .tap-btn.resting .tap-btn-icon { filter: grayscale(0.3); }
-  .tap-btn.resting .tap-btn-text { color: var(--green); }
-
-  /* ===== REST COUNTDOWN ===== */
-  .rest-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-    backdrop-filter: blur(4px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-  }
-
-  .rest-overlay.show { opacity: 1; pointer-events: all; }
-
-  .rest-label {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
-    letter-spacing: 4px;
-    color: var(--green);
-    margin-bottom: 8px;
-  }
-
-  .rest-count {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 96px;
-    line-height: 1;
-    color: var(--green);
-    text-shadow: 0 0 40px rgba(0,230,118,0.4);
-  }
-
-  .rest-skip {
-    margin-top: 20px;
-    padding: 8px 24px;
-    background: none;
-    border: 1px solid var(--green);
-    color: var(--green);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  /* ===== DONE OVERLAY ===== */
-  .done-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.92);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-    gap: 12px;
-  }
-
-  .done-overlay.show { opacity: 1; pointer-events: all; }
-
-  .done-emoji { font-size: 64px; animation: bounce 0.6s ease infinite alternate; }
-
-  @keyframes bounce {
-    from { transform: translateY(0); }
-    to { transform: translateY(-12px); }
-  }
-
-  .done-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 48px;
-    color: var(--gold);
-    letter-spacing: 4px;
-  }
-
-  .done-sub {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    color: var(--muted);
-    letter-spacing: 2px;
-  }
-
-  .done-btn {
-    margin-top: 16px;
-    padding: 14px 36px;
-    background: var(--accent);
-    color: white;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 3px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-
-  /* ===== COUNTDOWN OVERLAY ===== */
-  .countdown-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.88);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 150;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    gap: 10px;
-    backdrop-filter: blur(6px);
-  }
-
-  .countdown-overlay.show { opacity: 1; pointer-events: all; }
-
-  .cd-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #4fc3f7;
-  }
-
-  .cd-number {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 130px;
-    line-height: 1;
-    color: #4fc3f7;
-    text-shadow: 0 0 60px rgba(79,195,247,0.5);
-    animation: cdPop 1s ease forwards;
-  }
-
-  @keyframes cdPop {
-    0%   { transform: scale(1.4); opacity: 0; }
-    20%  { transform: scale(1.0); opacity: 1; }
-    80%  { transform: scale(1.0); opacity: 1; }
-    100% { transform: scale(0.6); opacity: 0; }
-  }
-
-  .cd-go {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 80px;
-    color: var(--green);
-    text-shadow: 0 0 60px rgba(0,230,118,0.6);
-    letter-spacing: 6px;
-  }
-
-  .cd-cancel {
-    margin-top: 24px;
-    padding: 8px 24px;
-    background: none;
-    border: 1px solid var(--muted);
-    color: var(--muted);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  /* ===== ACTION ROW ===== */
-  .action-row {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    max-width: 340px;
-    flex-shrink: 0;
-  }
-
-  .action-btn {
-    flex: 1;
-    padding: 12px 8px;
-    border-radius: 10px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
-    letter-spacing: 2px;
-    border: 1px solid var(--border);
-    background: var(--bg3);
-    color: var(--text);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.15s;
-  }
-
-  .action-btn:active { transform: scale(0.95); }
-
-  .action-btn.auto-btn { border-color: #4fc3f7; color: #4fc3f7; }
-  .action-btn.auto-btn.on { background: rgba(79,195,247,0.15); border-color: #4fc3f7; }
-
-  .action-btn.stop-btn { border-color: var(--accent); color: var(--accent); }
-  .action-btn.stop-btn:active { background: rgba(255,61,0,0.15); }
-
-  .action-btn.reset-btn { border-color: var(--muted); color: var(--muted); }
-
-  /* ===== SETTINGS PANEL ===== */
-  .settings-panel {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-  }
-
-  .settings-panel.open { transform: translateX(0); }
-
-  .settings-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .settings-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 2px;
-    color: var(--text);
-  }
-
-  .settings-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .settings-section {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin: 14px 0 6px;
-  }
-
-  .settings-section:first-child { margin-top: 0; }
-
-  .setting-row {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .setting-info { flex: 1; }
-
-  .setting-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .setting-desc {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .setting-control {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-
-  input[type=number] {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    width: 64px;
-    text-align: center;
-    border-radius: 6px;
-    padding: 6px 4px;
-    outline: none;
-  }
-
-  input[type=number]:focus { border-color: var(--accent); }
-
-  /* Toggle */
-  .toggle {
-    position: relative;
-    width: 44px;
-    height: 24px;
-    flex-shrink: 0;
-  }
-
-  .toggle input { opacity: 0; width: 0; height: 0; }
-
-  .toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--border);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .toggle-slider::before {
-    content: '';
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    left: 3px;
-    top: 3px;
-    background: var(--muted);
-    border-radius: 50%;
-    transition: 0.2s;
-  }
-
-  .toggle input:checked + .toggle-slider { background: var(--accent); }
-  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: white; }
-
-  /* Select */
-  select {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    border-radius: 6px;
-    padding: 6px 10px;
-    outline: none;
-    cursor: pointer;
-  }
-
-  select:focus { border-color: var(--accent); }
-
-  .step-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .step-btn:active { background: var(--accent); border-color: var(--accent); }
-
-  /* ===== SET HISTORY ===== */
-  .history-row {
-    display: flex;
-    gap: 6px;
-    padding: 0 16px 6px;
-    flex-shrink: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .history-row::-webkit-scrollbar { display: none; }
-
-  .set-badge {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    color: var(--muted);
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
-  .set-badge.done { border-color: var(--green); color: var(--green); }
-
-  /* ===== AUTO RPM INDICATOR ===== */
-  .auto-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 16px;
-    background: rgba(79,195,247,0.05);
-    border-top: 1px solid rgba(79,195,247,0.15);
-    border-bottom: 1px solid rgba(79,195,247,0.15);
-    flex-shrink: 0;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-  }
-
-  .auto-bar.show { opacity: 1; }
-
-  .auto-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #4fc3f7;
-    animation: pulse 1s ease infinite;
-  }
-
-  @keyframes pulse {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.7); }
-  }
-
-  .auto-bar-text {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: #4fc3f7;
-  }
-
-  /* ===== TIMER DISPLAY ===== */
-  .timer-display {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-align: center;
-  }
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #ff3d00;
+    --accent2: #ff6d00;
+    --gold: #ffd600;
+    --green: #00e676;
+    --text: #f5f5f5;
+    --muted: #666;
+    --panel: #141414;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .app-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .app-title span { color: var(--text); }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .icon-btn:active { transform: scale(0.92); background: var(--border); }
+  .icon-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(255,61,0,0.1); }
+
+  /* ===== STATS BAR ===== */
+  .stats-bar {
+    display: flex;
+    gap: 0;
+    padding: 0 16px;
+    margin: 10px 0 6px;
+    flex-shrink: 0;
+  }
+
+  .stat-chip {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 7px 6px;
+    text-align: center;
+  }
+
+  .stat-chip:first-child { border-radius: 8px 0 0 8px; }
+  .stat-chip:last-child { border-radius: 0 8px 8px 0; }
+  .stat-chip + .stat-chip { border-left: none; }
+
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--gold);
+  }
+
+  .stat-val.green { color: var(--green); }
+  .stat-val.accent { color: var(--accent); }
+
+  .stat-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-wrap {
+    padding: 0 16px 8px;
+    flex-shrink: 0;
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  /* ===== MAIN AREA ===== */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px 8px;
+    position: relative;
+    gap: 16px;
+    min-height: 0;
+  }
+
+  /* Big rep display */
+  .rep-display {
+    text-align: center;
+    position: relative;
+  }
+
+  .rep-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .rep-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(90px, 22vw, 140px);
+    line-height: 0.85;
+    color: var(--text);
+    transition: color 0.1s;
+    position: relative;
+    text-shadow: 0 0 60px rgba(255,61,0,0);
+    transition: text-shadow 0.2s, color 0.1s, transform 0.05s;
+  }
+
+  .rep-number.flash {
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(255,61,0,0.5);
+    transform: scale(1.04);
+  }
+
+  .rep-of {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .rep-of span { color: var(--gold); }
+
+  /* ===== TAP BUTTON ===== */
+  .tap-btn-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tap-ripple {
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    opacity: 0;
+    pointer-events: none;
+    animation: none;
+  }
+
+  @keyframes rippleOut {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  .tap-ripple.go { animation: rippleOut 0.5s ease-out forwards; }
+
+  .tap-btn {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #2a1a1a, #1a0a0a);
+    border: 3px solid var(--accent);
+    box-shadow:
+      0 0 0 6px rgba(255,61,0,0.08),
+      0 0 40px rgba(255,61,0,0.15),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.08s;
+    position: relative;
+    z-index: 2;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .tap-btn:active, .tap-btn.pressed {
+    transform: scale(0.94);
+    border-color: var(--gold);
+    box-shadow:
+      0 0 0 8px rgba(255,61,0,0.12),
+      0 0 60px rgba(255,61,0,0.3),
+      inset 0 2px 8px rgba(0,0,0,0.5);
+  }
+
+  .tap-btn-icon {
+    font-size: 36px;
+    line-height: 1;
+  }
+
+  .tap-btn-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--accent);
+  }
+
+  .tap-btn.resting {
+    border-color: var(--green);
+    box-shadow: 0 0 30px rgba(0,230,118,0.2), 0 0 0 6px rgba(0,230,118,0.08);
+  }
+
+  .tap-btn.resting .tap-btn-icon { filter: grayscale(0.3); }
+  .tap-btn.resting .tap-btn-text { color: var(--green); }
+
+  /* ===== REST COUNTDOWN ===== */
+  .rest-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .rest-overlay.show { opacity: 1; pointer-events: all; }
+
+  .rest-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+
+  .rest-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 96px;
+    line-height: 1;
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(0,230,118,0.4);
+  }
+
+  .rest-skip {
+    margin-top: 20px;
+    padding: 8px 24px;
+    background: none;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* ===== DONE OVERLAY ===== */
+  .done-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    gap: 12px;
+  }
+
+  .done-overlay.show { opacity: 1; pointer-events: all; }
+
+  .done-emoji { font-size: 64px; animation: bounce 0.6s ease infinite alternate; }
+
+  @keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-12px); }
+  }
+
+  .done-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--gold);
+    letter-spacing: 4px;
+  }
+
+  .done-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .done-btn {
+    margin-top: 16px;
+    padding: 14px 36px;
+    background: var(--accent);
+    color: white;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  /* ===== COUNTDOWN OVERLAY ===== */
+  .countdown-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    gap: 10px;
+    backdrop-filter: blur(6px);
+  }
+
+  .countdown-overlay.show { opacity: 1; pointer-events: all; }
+
+  .cd-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #4fc3f7;
+  }
+
+  .cd-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 130px;
+    line-height: 1;
+    color: #4fc3f7;
+    text-shadow: 0 0 60px rgba(79,195,247,0.5);
+    animation: cdPop 1s ease forwards;
+  }
+
+  @keyframes cdPop {
+    0%   { transform: scale(1.4); opacity: 0; }
+    20%  { transform: scale(1.0); opacity: 1; }
+    80%  { transform: scale(1.0); opacity: 1; }
+    100% { transform: scale(0.6); opacity: 0; }
+  }
+
+  .cd-go {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: var(--green);
+    text-shadow: 0 0 60px rgba(0,230,118,0.6);
+    letter-spacing: 6px;
+  }
+
+  .cd-cancel {
+    margin-top: 24px;
+    padding: 8px 24px;
+    background: none;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* ===== ACTION ROW ===== */
+  .action-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 340px;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 12px 8px;
+    border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+
+  .action-btn:active { transform: scale(0.95); }
+
+  .action-btn.auto-btn { border-color: #4fc3f7; color: #4fc3f7; }
+  .action-btn.auto-btn.on { background: rgba(79,195,247,0.15); border-color: #4fc3f7; }
+
+  .action-btn.stop-btn { border-color: var(--accent); color: var(--accent); }
+  .action-btn.stop-btn:active { background: rgba(255,61,0,0.15); }
+
+  .action-btn.reset-btn { border-color: var(--muted); color: var(--muted); }
+
+  /* ===== SETTINGS PANEL ===== */
+  .settings-panel {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .settings-panel.open { transform: translateX(0); }
+
+  .settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .settings-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .settings-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .settings-section {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 14px 0 6px;
+  }
+
+  .settings-section:first-child { margin-top: 0; }
+
+  .setting-row {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .setting-info { flex: 1; }
+
+  .setting-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .setting-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .setting-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  input[type=number] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    width: 64px;
+    text-align: center;
+    border-radius: 6px;
+    padding: 6px 4px;
+    outline: none;
+  }
+
+  input[type=number]:focus { border-color: var(--accent); }
+
+  /* Toggle */
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .toggle input { opacity: 0; width: 0; height: 0; }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: white; }
+
+  /* Select */
+  select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    border-radius: 6px;
+    padding: 6px 10px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  select:focus { border-color: var(--accent); }
+
+  .step-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step-btn:active { background: var(--accent); border-color: var(--accent); }
+
+  /* ===== SET HISTORY ===== */
+  .history-row {
+    display: flex;
+    gap: 6px;
+    padding: 0 16px 6px;
+    flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .history-row::-webkit-scrollbar { display: none; }
+
+  .set-badge {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .set-badge.done { border-color: var(--green); color: var(--green); }
+
+  /* ===== AUTO RPM INDICATOR ===== */
+  .auto-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: rgba(79,195,247,0.05);
+    border-top: 1px solid rgba(79,195,247,0.15);
+    border-bottom: 1px solid rgba(79,195,247,0.15);
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .auto-bar.show { opacity: 1; }
+
+  .auto-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4fc3f7;
+    animation: pulse 1s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .auto-bar-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #4fc3f7;
+  }
+
+  /* ===== TIMER DISPLAY ===== */
+  .timer-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-align: center;
+  }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
-  <div class="app-title">REP<span>.</span>COUNTER <span style="color:var(--muted);font-size:14px">PRO</span></div>
-  <div class="header-actions">
-    <div class="icon-btn" id="historyBtn" title="History">📋</div>
-    <div class="icon-btn" id="settingsBtn" title="Settings">⚙️</div>
-  </div>
+  <div class="app-title">REP<span>.</span>COUNTER <span style="color:var(--muted);font-size:14px">PRO</span></div>
+  <div class="header-actions">
+    <div class="icon-btn" id="historyBtn" title="History">📋</div>
+    <div class="icon-btn" id="settingsBtn" title="Settings">⚙️</div>
+  </div>
 </div>
 
+<!-- AUTO BAR -->
 <div class="auto-bar" id="autoBar">
-  <div class="auto-dot"></div>
-  <div class="auto-bar-text" id="autoBarText">AUTO MODE — 30 RPM</div>
+  <div class="auto-dot"></div>
+  <div class="auto-bar-text" id="autoBarText">AUTO MODE — 30 RPM</div>
 </div>
 
+<!-- STATS BAR -->
 <div class="stats-bar">
-  <div class="stat-chip">
-    <div class="stat-val green" id="statSets">0</div>
-    <div class="stat-label">Sets</div>
-  </div>
-  <div class="stat-chip">
-    <div class="stat-val" id="statTarget">10</div>
-    <div class="stat-label">Target</div>
-  </div>
-  <div class="stat-chip">
-    <div class="stat-val accent" id="statTotal">0</div>
-    <div class="stat-label">Total Reps</div>
-  </div>
-  <div class="stat-chip">
-    <div class="stat-val" id="statTime" style="color:var(--text)">0:00</div>
-    <div class="stat-label">Time</div>
-  </div>
+  <div class="stat-chip">
+    <div class="stat-val green" id="statSets">0</div>
+    <div class="stat-label">Sets</div>
+  </div>
+  <div class="stat-chip">
+    <div class="stat-val" id="statTarget">10</div>
+    <div class="stat-label">Target</div>
+  </div>
+  <div class="stat-chip">
+    <div class="stat-val accent" id="statTotal">0</div>
+    <div class="stat-label">Total Reps</div>
+  </div>
+  <div class="stat-chip">
+    <div class="stat-val" id="statTime" style="color:var(--text)">0:00</div>
+    <div class="stat-label">Time</div>
+  </div>
 </div>
 
+<!-- PROGRESS -->
 <div class="progress-wrap">
-  <div class="progress-track">
-    <div class="progress-fill" id="progressFill"></div>
-  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
 </div>
 
+<!-- SET HISTORY -->
 <div class="history-row" id="historyRow"></div>
 
+<!-- MAIN -->
 <div class="main">
-    <div class="rest-overlay" id="restOverlay">
-    <div class="rest-label">⏸ REST</div>
-    <div class="rest-count" id="restCount">0</div>
-    <button class="rest-skip" onclick="skipRest()">SKIP REST →</button>
-  </div>
+  <!-- Rest Overlay -->
+  <div class="rest-overlay" id="restOverlay">
+    <div class="rest-label">⏸ REST</div>
+    <div class="rest-count" id="restCount">0</div>
+    <button class="rest-skip" onclick="skipRest()">SKIP REST →</button>
+  </div>
 
-    <div class="done-overlay" id="doneOverlay">
-    <div class="done-emoji">🏆</div>
-    <div class="done-title">DONE!</div>
-    <div class="done-sub" id="doneSub">TARGET REACHED</div>
-    <button class="done-btn" onclick="resetAll()">NEW SESSION</button>
-  </div>
+  <!-- Done Overlay -->
+  <div class="done-overlay" id="doneOverlay">
+    <div class="done-emoji">🏆</div>
+    <div class="done-title">DONE!</div>
+    <div class="done-sub" id="doneSub">TARGET REACHED</div>
+    <button class="done-btn" onclick="resetAll()">NEW SESSION</button>
+  </div>
 
-    <div class="countdown-overlay" id="countdownOverlay">
-    <div class="cd-label">🤖 AUTO STARTING IN</div>
-    <div class="cd-number" id="cdNumber">3</div>
-    <button class="cd-cancel" onclick="cancelCountdown()">CANCEL</button>
-  </div>
+  <!-- Countdown Overlay -->
+  <div class="countdown-overlay" id="countdownOverlay">
+    <div class="cd-label">🤖 AUTO STARTING IN</div>
+    <div class="cd-number" id="cdNumber">3</div>
+    <button class="cd-cancel" onclick="cancelCountdown()">CANCEL</button>
+  </div>
 
-  <div class="rep-display">
-    <div class="rep-label">REPS THIS SET</div>
-    <div class="rep-number" id="repNumber">0</div>
-    <div class="rep-of">/ <span id="repOfTarget">10</span> target</div>
-  </div>
+  <div class="rep-display">
+    <div class="rep-label">REPS THIS SET</div>
+    <div class="rep-number" id="repNumber">0</div>
+    <div class="rep-of">/ <span id="repOfTarget">10</span> target</div>
+  </div>
 
-    <div class="tap-btn-wrap">
-    <div class="tap-ripple" id="tapRipple"></div>
-    <div class="tap-btn" id="tapBtn" onpointerdown="handleTap()">
-      <div class="tap-btn-icon">💪</div>
-      <div class="tap-btn-text">TAP</div>
-    </div>
-  </div>
+  <!-- TAP BUTTON -->
+  <div class="tap-btn-wrap">
+    <div class="tap-ripple" id="tapRipple"></div>
+    <div class="tap-btn" id="tapBtn" onpointerdown="handleTap()">
+      <div class="tap-btn-icon">💪</div>
+      <div class="tap-btn-text">TAP</div>
+    </div>
+  </div>
 
-  <div class="timer-display" id="timerDisplay">00:00</div>
+  <div class="timer-display" id="timerDisplay">00:00</div>
 </div>
 
+<!-- ACTION ROW -->
 <div class="action-row" style="padding: 0 16px 16px; max-width:100%;">
-  <button class="action-btn auto-btn" id="autoBtn" onclick="toggleAuto()">🤖 AUTO</button>
-  <button class="action-btn stop-btn" onclick="stopAll()">⏹ STOP</button>
-    <button class="action-btn reset-btn" onclick="resetAll()">↺ RESET</button>
+  <button class="action-btn auto-btn" id="autoBtn" onclick="toggleAuto()">🤖 AUTO</button>
+  <button class="action-btn stop-btn" onclick="stopAll()">⏹ STOP</button>
+  <button class="action-btn reset-btn" onclick="resetSet()">↺ RESET</button>
 </div>
 
+<!-- SETTINGS PANEL -->
 <div class="settings-panel" id="settingsPanel">
-  <div class="settings-header">
-    <div class="settings-title">⚙ SETTINGS</div>
-    <div class="icon-btn" onclick="closeSettings()">✕</div>
-  </div>
-  <div class="settings-body">
+  <div class="settings-header">
+    <div class="settings-title">⚙ SETTINGS</div>
+    <div class="icon-btn" onclick="closeSettings()">✕</div>
+  </div>
+  <div class="settings-body">
 
-    <div class="settings-section">🎯 Target</div>
+    <div class="settings-section">🎯 Target</div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Reps Per Set</div>
-        <div class="setting-desc">0 = unlimited</div>
-      </div>
-      <div class="setting-control">
-        <div class="step-btn" onclick="step('targetReps',-1)">−</div>
-        <input type="number" id="targetReps" value="10" min="0" max="999" onchange="saveSettings()">
-        <div class="step-btn" onclick="step('targetReps',1)">+</div>
-      </div>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Reps Per Set</div>
+        <div class="setting-desc">0 = unlimited</div>
+      </div>
+      <div class="setting-control">
+        <div class="step-btn" onclick="step('targetReps',-1)">−</div>
+        <input type="number" id="targetReps" value="10" min="0" max="999" onchange="saveSettings()">
+        <div class="step-btn" onclick="step('targetReps',1)">+</div>
+      </div>
+    </div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Target Sets</div>
-        <div class="setting-desc">0 = unlimited</div>
-      </div>
-      <div class="setting-control">
-        <div class="step-btn" onclick="step('targetSets',-1)">−</div>
-        <input type="number" id="targetSets" value="0" min="0" max="999" onchange="saveSettings()">
-        <div class="step-btn" onclick="step('targetSets',1)">+</div>
-      </div>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Target Sets</div>
+        <div class="setting-desc">0 = unlimited</div>
+      </div>
+      <div class="setting-control">
+        <div class="step-btn" onclick="step('targetSets',-1)">−</div>
+        <input type="number" id="targetSets" value="0" min="0" max="999" onchange="saveSettings()">
+        <div class="step-btn" onclick="step('targetSets',1)">+</div>
+      </div>
+    </div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Target Time (min)</div>
-        <div class="setting-desc">0 = unlimited</div>
-      </div>
-      <div class="setting-control">
-        <div class="step-btn" onclick="step('targetTime',-1)">−</div>
-        <input type="number" id="targetTime" value="0" min="0" max="999" onchange="saveSettings()">
-        <div class="step-btn" onclick="step('targetTime',1)">+</div>
-      </div>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Target Time (min)</div>
+        <div class="setting-desc">0 = unlimited</div>
+      </div>
+      <div class="setting-control">
+        <div class="step-btn" onclick="step('targetTime',-1)">−</div>
+        <input type="number" id="targetTime" value="0" min="0" max="999" onchange="saveSettings()">
+        <div class="step-btn" onclick="step('targetTime',1)">+</div>
+      </div>
+    </div>
 
-    <div class="settings-section">⏱ Timing</div>
+    <div class="settings-section">⏱ Timing</div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Rest Time (sec)</div>
-        <div class="setting-desc">0 = no rest between sets</div>
-      </div>
-      <div class="setting-control">
-        <div class="step-btn" onclick="step('restTime',-5)">−</div>
-        <input type="number" id="restTime" value="30" min="0" max="600" onchange="saveSettings()">
-        <div class="step-btn" onclick="step('restTime',5)">+</div>
-      </div>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Rest Time (sec)</div>
+        <div class="setting-desc">0 = no rest between sets</div>
+      </div>
+      <div class="setting-control">
+        <div class="step-btn" onclick="step('restTime',-5)">−</div>
+        <input type="number" id="restTime" value="30" min="0" max="600" onchange="saveSettings()">
+        <div class="step-btn" onclick="step('restTime',5)">+</div>
+      </div>
+    </div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Auto RPM</div>
-        <div class="setting-desc">Reps per minute in Auto Mode</div>
-      </div>
-      <div class="setting-control">
-        <div class="step-btn" onclick="step('autoRpm',-5)">−</div>
-        <input type="number" id="autoRpm" value="30" min="5" max="120" onchange="saveSettings()">
-        <div class="step-btn" onclick="step('autoRpm',5)">+</div>
-      </div>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Auto RPM</div>
+        <div class="setting-desc">Reps per minute in Auto Mode</div>
+      </div>
+      <div class="setting-control">
+        <div class="step-btn" onclick="step('autoRpm',-5)">−</div>
+        <input type="number" id="autoRpm" value="30" min="5" max="120" onchange="saveSettings()">
+        <div class="step-btn" onclick="step('autoRpm',5)">+</div>
+      </div>
+    </div>
 
-    <div class="settings-section">🔊 Audio</div>
+    <div class="settings-section">🔊 Audio</div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Beep Sound</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="beepOn" checked onchange="saveSettings()">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Beep Sound</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="beepOn" checked onchange="saveSettings()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Voice Count</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="voiceOn" checked onchange="saveSettings()">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Voice Count</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="voiceOn" checked onchange="saveSettings()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Voice Language</div>
-      </div>
-      <select id="voiceLang" onchange="saveSettings()">
-        <option value="en">English</option>
-        <option value="vi">Tiếng Việt</option>
-      </select>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Voice Language</div>
+      </div>
+      <select id="voiceLang" onchange="saveSettings()">
+        <option value="en">English</option>
+        <option value="vi">Tiếng Việt</option>
+      </select>
+    </div>
 
-    <div class="settings-section">📱 Display</div>
+    <div class="settings-section">📱 Display</div>
 
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-name">Wake Lock</div>
-        <div class="setting-desc">Keep screen on during workout</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="wakeLockOn" checked onchange="saveSettings(); toggleWakeLock()">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Wake Lock</div>
+        <div class="setting-desc">Keep screen on during workout</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="wakeLockOn" checked onchange="saveSettings(); toggleWakeLock()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
 
-  </div>
+  </div>
 </div>
 
 <script>
@@ -949,53 +961,53 @@ let isStopped = false;
 
 // ===== SETTINGS =====
 let settings = {
-  targetReps: 10,
-  targetSets: 0,
-  targetTime: 0,
-  restTime: 30,
-  autoRpm: 30,
-  beepOn: true,
-  voiceOn: true,
-  voiceLang: 'en',
-  wakeLockOn: true,
+  targetReps: 10,
+  targetSets: 0,
+  targetTime: 0,
+  restTime: 30,
+  autoRpm: 30,
+  beepOn: true,
+  voiceOn: true,
+  voiceLang: 'en',
+  wakeLockOn: true,
 };
 
 function loadSettings() {
-  const saved = localStorage.getItem('rcpro_settings');
-  if (saved) {
-    try { settings = { ...settings, ...JSON.parse(saved) }; } catch(e) {}
-  }
-  document.getElementById('targetReps').value = settings.targetReps;
-  document.getElementById('targetSets').value = settings.targetSets;
-  document.getElementById('targetTime').value = settings.targetTime;
-  document.getElementById('restTime').value = settings.restTime;
-  document.getElementById('autoRpm').value = settings.autoRpm;
-  document.getElementById('beepOn').checked = settings.beepOn;
-  document.getElementById('voiceOn').checked = settings.voiceOn;
-  document.getElementById('voiceLang').value = settings.voiceLang;
-  document.getElementById('wakeLockOn').checked = settings.wakeLockOn;
+  const saved = localStorage.getItem('rcpro_settings');
+  if (saved) {
+    try { settings = { ...settings, ...JSON.parse(saved) }; } catch(e) {}
+  }
+  document.getElementById('targetReps').value = settings.targetReps;
+  document.getElementById('targetSets').value = settings.targetSets;
+  document.getElementById('targetTime').value = settings.targetTime;
+  document.getElementById('restTime').value = settings.restTime;
+  document.getElementById('autoRpm').value = settings.autoRpm;
+  document.getElementById('beepOn').checked = settings.beepOn;
+  document.getElementById('voiceOn').checked = settings.voiceOn;
+  document.getElementById('voiceLang').value = settings.voiceLang;
+  document.getElementById('wakeLockOn').checked = settings.wakeLockOn;
 }
 
 function saveSettings() {
-  settings.targetReps = parseInt(document.getElementById('targetReps').value) || 0;
-  settings.targetSets = parseInt(document.getElementById('targetSets').value) || 0;
-  settings.targetTime = parseInt(document.getElementById('targetTime').value) || 0;
-  settings.restTime = parseInt(document.getElementById('restTime').value) || 0;
-  settings.autoRpm = parseInt(document.getElementById('autoRpm').value) || 30;
-  settings.beepOn = document.getElementById('beepOn').checked;
-  settings.voiceOn = document.getElementById('voiceOn').checked;
-  settings.voiceLang = document.getElementById('voiceLang').value;
-  settings.wakeLockOn = document.getElementById('wakeLockOn').checked;
-  localStorage.setItem('rcpro_settings', JSON.stringify(settings));
-  updateUI();
+  settings.targetReps = parseInt(document.getElementById('targetReps').value) || 0;
+  settings.targetSets = parseInt(document.getElementById('targetSets').value) || 0;
+  settings.targetTime = parseInt(document.getElementById('targetTime').value) || 0;
+  settings.restTime = parseInt(document.getElementById('restTime').value) || 0;
+  settings.autoRpm = parseInt(document.getElementById('autoRpm').value) || 30;
+  settings.beepOn = document.getElementById('beepOn').checked;
+  settings.voiceOn = document.getElementById('voiceOn').checked;
+  settings.voiceLang = document.getElementById('voiceLang').value;
+  settings.wakeLockOn = document.getElementById('wakeLockOn').checked;
+  localStorage.setItem('rcpro_settings', JSON.stringify(settings));
+  updateUI();
 }
 
 function step(id, delta) {
-  const el = document.getElementById(id);
-  let val = parseInt(el.value) + delta;
-  val = Math.max(parseInt(el.min)||0, Math.min(parseInt(el.max)||999, val));
-  el.value = val;
-  saveSettings();
+  const el = document.getElementById(id);
+  let val = parseInt(el.value) + delta;
+  val = Math.max(parseInt(el.min)||0, Math.min(parseInt(el.max)||999, val));
+  el.value = val;
+  saveSettings();
 }
 
 // ===== AUDIO =====
@@ -1003,82 +1015,82 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 
 function getAudio() {
-  if (!audioCtx) audioCtx = new AudioContext();
-  return audioCtx;
+  if (!audioCtx) audioCtx = new AudioContext();
+  return audioCtx;
 }
 
 function playBeep() {
-  if (!settings.beepOn) return;
-  try {
-    const ctx = getAudio();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.1);
-  } catch(e) {}
+  if (!settings.beepOn) return;
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.1);
+  } catch(e) {}
 }
 
 function playDoneBeep() {
-  try {
-    const ctx = getAudio();
-    [440, 550, 660, 880].forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.15);
-      osc.start(ctx.currentTime + i * 0.1);
-      osc.stop(ctx.currentTime + i * 0.1 + 0.2);
-    });
-  } catch(e) {}
+  try {
+    const ctx = getAudio();
+    [440, 550, 660, 880].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.15);
+      osc.start(ctx.currentTime + i * 0.1);
+      osc.stop(ctx.currentTime + i * 0.1 + 0.2);
+    });
+  } catch(e) {}
 }
 
 // ===== VOICE =====
 const voiceEN = ['One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
-  'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
+  'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
 const voiceVI = ['Một','Hai','Ba','Bốn','Năm','Sáu','Bảy','Tám','Chín','Mười',
-  'Mười một','Mười hai','Mười ba','Mười bốn','Mười lăm','Mười sáu','Mười bảy','Mười tám','Mười chín','Hai mươi'];
+  'Mười một','Mười hai','Mười ba','Mười bốn','Mười lăm','Mười sáu','Mười bảy','Mười tám','Mười chín','Hai mươi'];
 
 function speak(n) {
-  if (!settings.voiceOn || n < 1) return;
-  try {
-    const synth = window.speechSynthesis;
-    if (synth.paused) synth.resume();
+  if (!settings.voiceOn || n < 1) return;
+  try {
+    const synth = window.speechSynthesis;
+    if (synth.paused) synth.resume();
 
-    const utter = new SpeechSynthesisUtterance();
-    if (settings.voiceLang === 'vi') {
-      utter.text = n <= 20 ? voiceVI[n-1] : String(n);
-      utter.lang = 'vi-VN';
-    } else {
-      utter.text = n <= 20 ? voiceEN[n-1] : String(n);
-      utter.lang = 'en-US';
-    }
-    utter.rate = 1.4;
-    utter.volume = 1;
-    // Always queue — no cancel. Browser speaks each number in order.
-    synth.speak(utter);
-  } catch(e) {}
+    const utter = new SpeechSynthesisUtterance();
+    if (settings.voiceLang === 'vi') {
+      utter.text = n <= 20 ? voiceVI[n-1] : String(n);
+      utter.lang = 'vi-VN';
+    } else {
+      utter.text = n <= 20 ? voiceEN[n-1] : String(n);
+      utter.lang = 'en-US';
+    }
+    utter.rate = 1.4;
+    utter.volume = 1;
+    // Always queue — no cancel. Browser speaks each number in order.
+    synth.speak(utter);
+  } catch(e) {}
 }
 
 // Chrome speechSynthesis keep-alive: ping every 10s to prevent it from hanging
 setInterval(() => {
-  if (!settings.voiceOn) return;
-  const synth = window.speechSynthesis;
-  if (synth.speaking) return;
-  // silent resume trick
-  try { synth.resume(); } catch(e) {}
+  if (!settings.voiceOn) return;
+  const synth = window.speechSynthesis;
+  if (synth.speaking) return;
+  // silent resume trick
+  try { synth.resume(); } catch(e) {}
 }, 10000);
 
 // ===== VIBRATE =====
 function vib(pattern) {
-  if (navigator.vibrate) navigator.vibrate(pattern);
+  if (navigator.vibrate) navigator.vibrate(pattern);
 }
 
 // ===== WAKE LOCK — 3-layer approach =====
@@ -1092,92 +1104,92 @@ let wakeAudioCtx = null;
 let wakeAudioNode = null;
 
 function buildWakeVideo() {
-  // Tiny valid MP4 (black 1x1 pixel, 1s loop) as base64 — no network needed
-  // Source: https://github.com/richtr/NoSleep.js
-  const mp4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAA' +
-    'KFtZGF0AAAC8QYF//+13EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE0MiByMjQ3OSBkZDc5YTYx' +
-    'IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNCAtIGh0dHA6Ly93d3' +
-    'cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0x' +
-    'OjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLj' +
-    'AwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBj' +
-    'cW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYW' +
-    'RzPTYgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBp' +
-    'bnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIG' +
-    'JfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9' +
-    'MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZn' +
-    'Jlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAg' +
-    'cXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAABZ2WIhA' +
-    'Af/qgAAAAMbW9vdgAAAGxtdmhkAAAAAM9ghxbPYIcWAAAD6AAAACoAAQAAAQAAAAAAAAAAAAAAAAEAAAAA' +
-    'AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIXdHJh' +
-    'awAAAFx0a2hkAAAAD89ghxbPYIcWAAAAAQAAAAAAAAArAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAA' +
-    'AAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAFAAAABQAAAAB4bWRpYQAAACBtZGhkAAAAAM9ghxbPYIcWAAB' +
-    'dqAAACAAAABVoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAVmlkZW9IYW5kbGVyAAAAASNtaW5mAAAA' +
-    'FHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAADjc3Ri' +
-    'bAAAALNzdHNkAAAAAAAAAAEAAACjYXZjMQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAFAAFAASAAAAEgA' +
-    'AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAADVhdmNDAWQACf/hABdnZA' +
-    'AJrNlAmDCJAAAAAwCAAAAPA8WLZYABAAZo6+PLIsAAAAYQnVuc21hcAAAAAAAAAAAAAAAAAAAABhzdHRz' +
-    'AAAAAAAAAAEAAAABAAAAEAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAABAAAA' +
-    'AQAAABRzdHNzAAAAAAAAAAAAAAABAAAAIQAAABRZGAAAAAAAAAAAAAAAAQAAABQAAAA=';
-  const v = document.createElement('video');
-  v.setAttribute('loop', '');
-  v.setAttribute('playsinline', '');
-  v.setAttribute('muted', '');
-  v.setAttribute('preload', 'auto');
-  v.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1';
-  v.src = mp4;
-  document.body.appendChild(v);
-  return v;
+  // Tiny valid MP4 (black 1x1 pixel, 1s loop) as base64 — no network needed
+  // Source: https://github.com/richtr/NoSleep.js
+  const mp4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAA' +
+    'KFtZGF0AAAC8QYF//+13EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE0MiByMjQ3OSBkZDc5YTYx' +
+    'IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNCAtIGh0dHA6Ly93d3' +
+    'cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0x' +
+    'OjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLj' +
+    'AwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBj' +
+    'cW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYW' +
+    'RzPTYgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBp' +
+    'bnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIG' +
+    'JfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9' +
+    'MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZn' +
+    'Jlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAg' +
+    'cXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAABZ2WIhA' +
+    'Af/qgAAAAMbW9vdgAAAGxtdmhkAAAAAM9ghxbPYIcWAAAD6AAAACoAAQAAAQAAAAAAAAAAAAAAAAEAAAAA' +
+    'AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIXdHJh' +
+    'awAAAFx0a2hkAAAAD89ghxbPYIcWAAAAAQAAAAAAAAArAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAA' +
+    'AAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAFAAAABQAAAAB4bWRpYQAAACBtZGhkAAAAAM9ghxbPYIcWAAB' +
+    'dqAAACAAAABVoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAVmlkZW9IYW5kbGVyAAAAASNtaW5mAAAA' +
+    'FHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAADjc3Ri' +
+    'bAAAALNzdHNkAAAAAAAAAAEAAACjYXZjMQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAFAAFAASAAAAEgA' +
+    'AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAADVhdmNDAWQACf/hABdnZA' +
+    'AJrNlAmDCJAAAAAwCAAAAPA8WLZYABAAZo6+PLIsAAAAYQnVuc21hcAAAAAAAAAAAAAAAAAAAABhzdHRz' +
+    'AAAAAAAAAAEAAAABAAAAEAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAABAAAA' +
+    'AQAAABRzdHN6AAAAAAAAAAAAAAABAAAAIQAAABRZGAAAAAAAAAAAAAAAAQAAABQAAAA=';
+  const v = document.createElement('video');
+  v.setAttribute('loop', '');
+  v.setAttribute('playsinline', '');
+  v.setAttribute('muted', '');
+  v.setAttribute('preload', 'auto');
+  v.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1';
+  v.src = mp4;
+  document.body.appendChild(v);
+  return v;
 }
 
 async function acquireWakeLock() {
-  if (!settings.wakeLockOn) return;
+  if (!settings.wakeLockOn) return;
 
-  // Layer 1: Native API
-  try {
-    if (navigator.wakeLock) {
-      if (!wakeLock || wakeLock.released) {
-        wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener('release', () => {
-          if (settings.wakeLockOn && !isStopped && document.visibilityState === 'visible') {
-            setTimeout(() => acquireWakeLock(), 500);
-          }
-        });
-      }
-    }
-  } catch(e) {}
+  // Layer 1: Native API
+  try {
+    if (navigator.wakeLock) {
+      if (!wakeLock || wakeLock.released) {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => {
+          if (settings.wakeLockOn && !isStopped && document.visibilityState === 'visible') {
+            setTimeout(() => acquireWakeLock(), 500);
+          }
+        });
+      }
+    }
+  } catch(e) {}
 
-  // Layer 2: Video loop (must be triggered by user gesture)
-  try {
-    if (!wakeVideo) wakeVideo = buildWakeVideo();
-    await wakeVideo.play();
-  } catch(e) {}
+  // Layer 2: Video loop (must be triggered by user gesture)
+  try {
+    if (!wakeVideo) wakeVideo = buildWakeVideo();
+    await wakeVideo.play();
+  } catch(e) {}
 
-  // Layer 3: Silent AudioContext (keeps audio pipeline alive)
-  try {
-    if (!wakeAudioCtx) {
-      wakeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      wakeAudioNode = wakeAudioCtx.createOscillator();
-      const gain = wakeAudioCtx.createGain();
-      gain.gain.value = 0.00001; // near-silent
-      wakeAudioNode.connect(gain);
-      gain.connect(wakeAudioCtx.destination);
-      wakeAudioNode.start();
-    } else if (wakeAudioCtx.state === 'suspended') {
-      await wakeAudioCtx.resume();
-    }
-  } catch(e) {}
+  // Layer 3: Silent AudioContext (keeps audio pipeline alive)
+  try {
+    if (!wakeAudioCtx) {
+      wakeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      wakeAudioNode = wakeAudioCtx.createOscillator();
+      const gain = wakeAudioCtx.createGain();
+      gain.gain.value = 0.00001; // near-silent
+      wakeAudioNode.connect(gain);
+      gain.connect(wakeAudioCtx.destination);
+      wakeAudioNode.start();
+    } else if (wakeAudioCtx.state === 'suspended') {
+      await wakeAudioCtx.resume();
+    }
+  } catch(e) {}
 }
 
 async function releaseWakeLock() {
-  try { if (wakeLock && !wakeLock.released) await wakeLock.release(); } catch(e) {}
-  wakeLock = null;
-  try { wakeVideo?.pause(); } catch(e) {}
-  try { if (wakeAudioCtx?.state === 'running') await wakeAudioCtx.suspend(); } catch(e) {}
+  try { if (wakeLock && !wakeLock.released) await wakeLock.release(); } catch(e) {}
+  wakeLock = null;
+  try { wakeVideo?.pause(); } catch(e) {}
+  try { if (wakeAudioCtx?.state === 'running') await wakeAudioCtx.suspend(); } catch(e) {}
 }
 
 async function toggleWakeLock() {
-  if (settings.wakeLockOn) await acquireWakeLock();
-  else await releaseWakeLock();
+  if (settings.wakeLockOn) await acquireWakeLock();
+  else await releaseWakeLock();
 }
 
 // ===== COUNTDOWN BEFORE AUTO =====
@@ -1185,317 +1197,366 @@ let countdownTimer = null;
 let countdownVal = 3;
 
 function startCountdown(callback) {
-  countdownVal = 3;
-  const overlay = document.getElementById('countdownOverlay');
-  const numEl = document.getElementById('cdNumber');
-  overlay.classList.add('show');
+  const overlay = document.getElementById('countdownOverlay');
+  const numEl = document.getElementById('cdNumber');
+  overlay.classList.add('show');
 
-  function tick() {
-    // Force re-trigger animation
-    numEl.style.animation = 'none';
-    void numEl.offsetWidth;
-    numEl.style.animation = 'cdPop 1s ease forwards';
+  let val = 3;
 
-    if (countdownVal > 0) {
-      numEl.textContent = countdownVal;
-      numEl.style.color = '#4fc3f7';
-      numEl.style.textShadow = '0 0 60px rgba(79,195,247,0.5)';
-      playCountdownBeep(countdownVal);
-      countdownVal--;
-      countdownTimer = setTimeout(tick, 1000);
-    } else {
-      numEl.textContent = 'GO!';
-      numEl.style.color = 'var(--green)';
-      numEl.style.textShadow = '0 0 60px rgba(0,230,118,0.6)';
-      playCountdownBeep(0);
-      countdownTimer = setTimeout(() => {
-        overlay.classList.remove('show');
-        callback();
-      }, 700);
-    }
-  }
-  tick();
+  function tick() {
+    numEl.style.animation = 'none';
+    void numEl.offsetWidth;
+    numEl.style.animation = 'cdPop 1s ease forwards';
+
+    if (val > 0) {
+      numEl.textContent = val;
+      numEl.style.color = '#4fc3f7';
+      numEl.style.textShadow = '0 0 60px rgba(79,195,247,0.5)';
+      playCountdownBeep(val);
+      val--;
+      countdownTimer = setTimeout(tick, 1000);
+    } else {
+      numEl.textContent = 'GO!';
+      numEl.style.color = 'var(--green)';
+      numEl.style.textShadow = '0 0 60px rgba(0,230,118,0.6)';
+      playCountdownBeep(0);
+      countdownTimer = setTimeout(() => {
+        overlay.classList.remove('show');
+        countdownTimer = null;
+        callback();
+      }, 700);
+    }
+  }
+  tick();
 }
 
 function cancelCountdown() {
-  clearTimeout(countdownTimer);
-  countdownTimer = null;
-  document.getElementById('countdownOverlay').classList.remove('show');
-  isAutoMode = false;
-  document.getElementById('autoBtn').classList.remove('on');
-  document.getElementById('autoBar').classList.remove('show');
+  clearTimeout(countdownTimer);
+  countdownTimer = null;
+  document.getElementById('countdownOverlay').classList.remove('show');
+  isAutoMode = false;
+  document.getElementById('autoBtn').classList.remove('on');
+  document.getElementById('autoBar').classList.remove('show');
 }
 
 function playCountdownBeep(n) {
-  try {
-    const ctx = getAudio();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = n === 0 ? 1046 : 660; // GO = high C, others = E5
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (n === 0 ? 0.4 : 0.15));
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + (n === 0 ? 0.5 : 0.2));
-  } catch(e) {}
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = n === 0 ? 1046 : 660; // GO = high C, others = E5
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (n === 0 ? 0.4 : 0.15));
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + (n === 0 ? 0.5 : 0.2));
+  } catch(e) {}
 }
 
 // ===== TIMER =====
 function startSessionTimer() {
-  if (sessionTimer) return;
-  sessionStartTime = sessionStartTime || Date.now() - sessionSeconds * 1000;
-  sessionTimer = setInterval(() => {
-    sessionSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-    updateTimerDisplay();
-    // Check target time
-    if (settings.targetTime > 0 && sessionSeconds >= settings.targetTime * 60) {
-      finishSession('TIME TARGET REACHED');
-    }
-  }, 500);
+  if (sessionTimer) return;
+  sessionStartTime = sessionStartTime || Date.now() - sessionSeconds * 1000;
+  sessionTimer = setInterval(() => {
+    sessionSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+    updateTimerDisplay();
+    // Check target time
+    if (settings.targetTime > 0 && sessionSeconds >= settings.targetTime * 60) {
+      finishSession('TIME TARGET REACHED');
+    }
+  }, 500);
 }
 
 function stopSessionTimer() {
-  clearInterval(sessionTimer);
-  sessionTimer = null;
+  clearInterval(sessionTimer);
+  sessionTimer = null;
 }
 
 function updateTimerDisplay() {
-  const m = Math.floor(sessionSeconds / 60);
-  const s = sessionSeconds % 60;
-  const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  document.getElementById('timerDisplay').textContent = str;
-  document.getElementById('statTime').textContent = str;
+  const m = Math.floor(sessionSeconds / 60);
+  const s = sessionSeconds % 60;
+  const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('timerDisplay').textContent = str;
+  document.getElementById('statTime').textContent = str;
 }
 
 // ===== MAIN COUNT =====
 function handleTap() {
-  if (isResting) return;
-  if (isStopped) {
-    isStopped = false;
-    sessionStartTime = Date.now();
-  }
-  startSessionTimer();
-  acquireWakeLock(); // must be inside user gesture for NoSleep to work
-  doRep();
+  if (isResting) return;
+  if (isStopped) {
+    isStopped = false;
+    sessionStartTime = Date.now();
+  }
+  startSessionTimer();
+  acquireWakeLock(); // must be inside user gesture for NoSleep to work
+  doRep();
 }
 
 function doRep() {
-  currentRep++;
-  totalReps++;
-  playBeep();
-  if (currentRep > 0) speak(currentRep);
-  flashRep();
-  triggerRipple();
-  updateUI();
+  currentRep++;
+  totalReps++;
+  playBeep();
+  speak(currentRep);
+  flashRep();
+  triggerRipple();
+  updateUI();
 
-  // Check set complete
-  if (settings.targetReps > 0 && currentRep >= settings.targetReps) {
-    completeSet();
-  }
+  if (settings.targetReps > 0 && currentRep >= settings.targetReps) {
+    // Delay completeSet so last rep number renders and voice finishes
+    setTimeout(() => completeSet(), 300);
+  }
 }
 
 function flashRep() {
-  const el = document.getElementById('repNumber');
-  el.classList.remove('flash');
-  void el.offsetWidth;
-  el.classList.add('flash');
-  setTimeout(() => el.classList.remove('flash'), 200);
+  const el = document.getElementById('repNumber');
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 200);
 }
 
 function triggerRipple() {
-  const r = document.getElementById('tapRipple');
-  r.classList.remove('go');
-  void r.offsetWidth;
-  r.classList.add('go');
+  const r = document.getElementById('tapRipple');
+  r.classList.remove('go');
+  void r.offsetWidth;
+  r.classList.add('go');
 }
 
-// FIXED: Hàm completeSet() đồng nhất xử lý cho cả 2 trường hợp có và không có Rest Time
 function completeSet() {
-  vib([100, 50, 200]);
-  const reps = currentRep;
-  currentSet++;
-  setHistory.push(reps);
+  vib([100, 50, 200]);
+  clearInterval(autoTimer);
+  autoTimer = null;
 
-  // Check sets target
-  if (settings.targetSets > 0 && currentSet >= settings.targetSets) {
-    setTimeout(() => finishSession('ALL SETS DONE 🔥'), 300);
-    return;
-  }
+  currentSet++;
+  setHistory.push(currentRep);
 
-  currentRep = 0;
-  updateStatsOnly(); // Giữ nguyên màn hình hiển thị ở số cuối của set vừa qua
+  if (settings.targetSets > 0 && currentSet >= settings.targetSets) {
+    finishSession('ALL SETS DONE 🔥');
+    return;
+  }
 
-  if (isAutoMode) {
-    startAuto(); // Bắt đầu chạy lại chu kỳ đếm
-  }
+  currentRep = 0;
+  updateStatsOnly();
 
-  if (settings.restTime > 0) {
-    startRest(settings.restTime); // Phủ thêm màn hình chờ đếm ngược lên trên
-  }
+  if (settings.restTime > 0) {
+    // Show "1" after short delay, then start rest overlay
+    setTimeout(() => {
+      document.getElementById('repNumber').textContent = '1';
+      startRest(settings.restTime);
+    }, 400);
+  } else {
+    // rest=0: wait 1 interval then start next set
+    if (isAutoMode) {
+      const interval = (60 / settings.autoRpm) * 1000;
+      autoTimer = setTimeout(() => startAutoSet(true), interval);
+    }
+  }
 }
 
 // ===== REST =====
 function startRest(seconds) {
-  isResting = true;
-  let remaining = seconds;
-  document.getElementById('restCount').textContent = remaining;
-  document.getElementById('restOverlay').classList.add('show');
+  isResting = true;
+  let remaining = seconds;
+  document.getElementById('restCount').textContent = remaining;
+  document.getElementById('restOverlay').classList.add('show');
 
-  restTimer = setInterval(() => {
-    remaining--;
-    document.getElementById('restCount').textContent = remaining;
-    if (remaining <= 0) {
-      skipRest();
-    }
-  }, 1000);
+  restTimer = setInterval(() => {
+    remaining--;
+    document.getElementById('restCount').textContent = remaining;
+    if (remaining <= 0) skipRest();
+  }, 1000);
 }
 
-// FIXED: Hàm skipRest() chỉ đơn giản là gỡ bỏ màn hình chờ
 function skipRest() {
-  clearInterval(restTimer);
-  isResting = false;
-  document.getElementById('restOverlay').classList.remove('show');
+  clearInterval(restTimer);
+  restTimer = null;
+  isResting = false;
+  document.getElementById('restOverlay').classList.remove('show');
+  if (isAutoMode) startAutoSet(true);
 }
 
 // ===== AUTO MODE =====
 function toggleAuto() {
-  if (isAutoMode) {
-    // If counting down, cancel it
-    if (countdownTimer !== null) {
-      cancelCountdown();
-      return;
-    }
-    isAutoMode = false;
-    clearInterval(autoTimer);
-    autoTimer = null;
-    document.getElementById('autoBtn').classList.remove('on');
-    document.getElementById('autoBar').classList.remove('show');
-  } else {
-    if (isStopped) { isStopped = false; sessionStartTime = Date.now(); }
-    isAutoMode = true;
-    document.getElementById('autoBtn').classList.add('on');
-    document.getElementById('autoBar').classList.add('show');
-    document.getElementById('autoBarText').textContent = `AUTO MODE — ${settings.autoRpm} RPM`;
-
-    // Acquire wake lock immediately on user gesture BEFORE countdown
-    acquireWakeLock();
-
-    startCountdown(() => {
-      startSessionTimer();
-      if (!isResting && isAutoMode) startAuto();
-    });
-  }
+  if (isAutoMode) {
+    if (countdownTimer !== null) {
+      cancelCountdown();
+      return;
+    }
+    isAutoMode = false;
+    clearInterval(autoTimer);
+    clearTimeout(autoTimer);
+    autoTimer = null;
+    document.getElementById('autoBtn').classList.remove('on');
+    document.getElementById('autoBar').classList.remove('show');
+  } else {
+    if (isStopped) { isStopped = false; sessionStartTime = Date.now(); }
+    isAutoMode = true;
+    document.getElementById('autoBtn').classList.add('on');
+    document.getElementById('autoBar').classList.add('show');
+    document.getElementById('autoBarText').textContent = `AUTO MODE — ${settings.autoRpm} RPM`;
+    acquireWakeLock();
+    startCountdown(() => {
+      startSessionTimer();
+      if (isAutoMode) startAutoSet(true);
+    });
+  }
 }
 
-function startAuto() {
-  clearInterval(autoTimer);
-  const interval = (60 / settings.autoRpm) * 1000;
-  autoTimer = setInterval(() => {
-    if (!isResting && !isStopped) doRep();
-  }, interval);
+// immediate=true: fire rep 1 now then interval
+// immediate=false: just setInterval (used nowhere now, kept for safety)
+function startAutoSet(immediate = false) {
+  clearInterval(autoTimer);
+  clearTimeout(autoTimer);
+  autoTimer = null;
+
+  if (!isAutoMode || isStopped || isResting) return;
+
+  const interval = (60 / settings.autoRpm) * 1000;
+
+  if (immediate) {
+    doRep();
+    // Only set interval if set not finished by that doRep
+    if (isAutoMode && !isStopped && !isResting && currentRep > 0) {
+      autoTimer = setInterval(() => {
+        if (!isAutoMode || isStopped || isResting) return;
+        doRep();
+      }, interval);
+    }
+  } else {
+    autoTimer = setInterval(() => {
+      if (!isAutoMode || isStopped || isResting) return;
+      doRep();
+    }, interval);
+  }
 }
 
 // ===== STOP / RESET =====
 function stopAll() {
-  isAutoMode = false;
-  isStopped = true;
-  clearInterval(autoTimer);
-  autoTimer = null;
-  clearInterval(restTimer);
-  restTimer = null;
-  isResting = false;
-  stopSessionTimer();
-  window.speechSynthesis?.cancel();
-  document.getElementById('autoBtn').classList.remove('on');
-  document.getElementById('autoBar').classList.remove('show');
-  document.getElementById('restOverlay').classList.remove('show');
-  releaseWakeLock();
-  updateUI();
+  isAutoMode = false;
+  isStopped = true;
+  clearInterval(autoTimer);
+  autoTimer = null;
+  clearInterval(restTimer);
+  restTimer = null;
+  isResting = false;
+  stopSessionTimer();
+  window.speechSynthesis?.cancel();
+  document.getElementById('autoBtn').classList.remove('on');
+  document.getElementById('autoBar').classList.remove('show');
+  document.getElementById('restOverlay').classList.remove('show');
+  releaseWakeLock();
+  updateUI();
 }
 
 function resetSet() {
-  currentRep = 0;
-  updateUI();
+  // Reset toàn bộ buổi tập
+  clearInterval(autoTimer);
+  autoTimer = null;
+  clearInterval(restTimer);
+  restTimer = null;
+  clearTimeout(countdownTimer);
+  countdownTimer = null;
+  isResting = false;
+  isAutoMode = false;
+  isStopped = false;
+  window.speechSynthesis?.cancel();
+  document.getElementById('autoBtn').classList.remove('on');
+  document.getElementById('autoBar').classList.remove('show');
+  document.getElementById('restOverlay').classList.remove('show');
+  document.getElementById('countdownOverlay').classList.remove('show');
+  stopSessionTimer();
+  currentRep = 0;
+  currentSet = 0;
+  totalReps = 0;
+  sessionSeconds = 0;
+  sessionStartTime = null;
+  setHistory = [];
+  renderHistory();
+  updateTimerDisplay();
+  updateUI();
 }
 
 function resetAll() {
-  stopAll();
-  currentRep = 0;
-  currentSet = 0;
-  totalReps = 0;
-  sessionSeconds = 0;
-  sessionStartTime = null;
-  setHistory = [];
-  isStopped = false;
-  document.getElementById('doneOverlay').classList.remove('show');
-  renderHistory();
-  updateTimerDisplay();
-  updateUI();
+  clearTimeout(countdownTimer);
+  countdownTimer = null;
+  document.getElementById('countdownOverlay').classList.remove('show');
+  stopAll();
+  currentRep = 0;
+  currentSet = 0;
+  totalReps = 0;
+  sessionSeconds = 0;
+  sessionStartTime = null;
+  setHistory = [];
+  isStopped = false;
+  document.getElementById('doneOverlay').classList.remove('show');
+  renderHistory();
+  updateTimerDisplay();
+  updateUI();
 }
 
 // ===== FINISH =====
 function finishSession(msg) {
-  stopAll();
-  vib([200, 100, 200, 100, 400]);
-  playDoneBeep();
-  document.getElementById('doneSub').textContent = msg;
-  document.getElementById('doneOverlay').classList.add('show');
-  renderHistory();
+  stopAll();
+  vib([200, 100, 200, 100, 400]);
+  playDoneBeep();
+  document.getElementById('doneSub').textContent = msg;
+  document.getElementById('doneOverlay').classList.add('show');
+  renderHistory();
 }
 
 // ===== UI UPDATE =====
 function updateUI() {
-  const rep = settings.targetReps;
-  document.getElementById('repNumber').textContent = currentRep;
-  document.getElementById('repOfTarget').textContent = rep > 0 ? rep : '∞';
-  document.getElementById('statSets').textContent = currentSet;
-  document.getElementById('statTarget').textContent = rep > 0 ? rep : '∞';
-  document.getElementById('statTotal').textContent = totalReps;
+  const rep = settings.targetReps;
+  document.getElementById('repNumber').textContent = currentRep;
+  document.getElementById('repOfTarget').textContent = rep > 0 ? rep : '∞';
+  document.getElementById('statSets').textContent = currentSet;
+  document.getElementById('statTarget').textContent = rep > 0 ? rep : '∞';
+  document.getElementById('statTotal').textContent = totalReps;
 
-  // Progress
-  let pct = 0;
-  if (rep > 0 && currentRep <= rep) pct = (currentRep / rep) * 100;
-  if (rep === 0) pct = 0;
-  document.getElementById('progressFill').style.width = pct + '%';
+  // Progress
+  let pct = 0;
+  if (rep > 0 && currentRep <= rep) pct = (currentRep / rep) * 100;
+  if (rep === 0) pct = 0;
+  document.getElementById('progressFill').style.width = pct + '%';
 
-  renderHistory();
+  renderHistory();
 }
 
 // Update stats only, keep repNumber display unchanged (used between sets when rest=0)
 function updateStatsOnly() {
-  const rep = settings.targetReps;
-  document.getElementById('repOfTarget').textContent = rep > 0 ? rep : '∞';
-  document.getElementById('statSets').textContent = currentSet;
-  document.getElementById('statTarget').textContent = rep > 0 ? rep : '∞';
-  document.getElementById('statTotal').textContent = totalReps;
-  document.getElementById('progressFill').style.width = '100%'; // show full bar until next rep
-  renderHistory();
+  const rep = settings.targetReps;
+  document.getElementById('repOfTarget').textContent = rep > 0 ? rep : '∞';
+  document.getElementById('statSets').textContent = currentSet;
+  document.getElementById('statTarget').textContent = rep > 0 ? rep : '∞';
+  document.getElementById('statTotal').textContent = totalReps;
+  document.getElementById('progressFill').style.width = '100%'; // show full bar until next rep
+  renderHistory();
 }
 
 // ===== HISTORY =====
 function renderHistory() {
-  const row = document.getElementById('historyRow');
-  if (setHistory.length === 0) { row.innerHTML = ''; return; }
-  row.innerHTML = setHistory.map((r, i) =>
-    `<div class="set-badge done">S${i+1}: ${r}</div>`
-  ).join('');
-  // Show upcoming sets
-  const tsets = settings.targetSets;
-  if (tsets > 0) {
-    for (let i = setHistory.length; i < tsets; i++) {
-      row.innerHTML += `<div class="set-badge">S${i+1}</div>`;
-    }
-  }
-  row.scrollLeft = row.scrollWidth;
+  const row = document.getElementById('historyRow');
+  if (setHistory.length === 0) { row.innerHTML = ''; return; }
+  row.innerHTML = setHistory.map((r, i) =>
+    `<div class="set-badge done">S${i+1}: ${r}</div>`
+  ).join('');
+  // Show upcoming sets
+  const tsets = settings.targetSets;
+  if (tsets > 0) {
+    for (let i = setHistory.length; i < tsets; i++) {
+      row.innerHTML += `<div class="set-badge">S${i+1}</div>`;
+    }
+  }
+  row.scrollLeft = row.scrollWidth;
 }
 
 // ===== SETTINGS PANEL =====
 document.getElementById('settingsBtn').onclick = () => {
-  document.getElementById('settingsPanel').classList.add('open');
+  document.getElementById('settingsPanel').classList.add('open');
 };
 
 function closeSettings() {
-  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('settingsPanel').classList.remove('open');
 }
 
 // ===== INIT =====
@@ -1505,119 +1566,131 @@ updateTimerDisplay();
 
 // Resume wake lock on visibility change (browser releases it when tab is hidden)
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && settings.wakeLockOn && !isStopped) {
-    acquireWakeLock();
-  }
+  if (document.visibilityState === 'visible' && settings.wakeLockOn && !isStopped) {
+    acquireWakeLock();
+  }
 });
 
 // Prevent zoom on double tap
 let lastTap = 0;
 document.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - lastTap < 300) e.preventDefault();
-  lastTap = now;
+  const now = Date.now();
+  if (now - lastTap < 300) e.preventDefault();
+  lastTap = now;
 }, { passive: false });
 
 // ===== PWA: INLINE MANIFEST + ICON =====
 (function setupPWA() {
-  // Generate icon as SVG → PNG via canvas
-  const iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-        <rect width="512" height="512" rx="100" fill="#0a0a0a"/>
-        <circle cx="256" cy="256" r="230" fill="none" stroke="#ff3d00" stroke-width="14"/>
+  // Generate icon as SVG → PNG via canvas
+  const iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <!-- Background -->
+    <rect width="512" height="512" rx="100" fill="#0a0a0a"/>
+    <!-- Outer ring -->
+    <circle cx="256" cy="256" r="230" fill="none" stroke="#ff3d00" stroke-width="14"/>
 
-            <path d="M155 200 C155 160 185 130 230 125 L310 125 C340 125 360 145 360 175 L360 230 C360 245 350 258 336 262 L180 262 C165 262 155 250 155 235 Z" fill="#1a1a1a" stroke="#ff3d00" stroke-width="6"/>
-        <path d="M165 165 C165 148 178 138 195 138 L310 138 C328 138 348 150 348 168" fill="none" stroke="#ff6d00" stroke-width="4" stroke-linecap="round"/>
-        <line x1="210" y1="145" x2="210" y2="255" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
-    <line x1="240" y1="138" x2="240" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
-    <line x1="270" y1="138" x2="270" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
-    <line x1="300" y1="140" x2="300" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
-        <rect x="155" y="185" width="205" height="16" rx="4" fill="#ff3d00" opacity="0.9"/>
-    <rect x="155" y="220" width="205" height="16" rx="4" fill="#ff3d00" opacity="0.7"/>
+    <!-- Inline skate boot -->
+    <!-- Boot upper -->
+    <path d="M155 200 C155 160 185 130 230 125 L310 125 C340 125 360 145 360 175 L360 230 C360 245 350 258 336 262 L180 262 C165 262 155 250 155 235 Z" fill="#1a1a1a" stroke="#ff3d00" stroke-width="6"/>
+    <!-- Boot cuff highlight -->
+    <path d="M165 165 C165 148 178 138 195 138 L310 138 C328 138 348 150 348 168" fill="none" stroke="#ff6d00" stroke-width="4" stroke-linecap="round"/>
+    <!-- Boot laces -->
+    <line x1="210" y1="145" x2="210" y2="255" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
+    <line x1="240" y1="138" x2="240" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
+    <line x1="270" y1="138" x2="270" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
+    <line x1="300" y1="140" x2="300" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
+    <!-- Buckle straps -->
+    <rect x="155" y="185" width="205" height="16" rx="4" fill="#ff3d00" opacity="0.9"/>
+    <rect x="155" y="220" width="205" height="16" rx="4" fill="#ff3d00" opacity="0.7"/>
 
-        <rect x="148" y="258" width="230" height="28" rx="6" fill="#222" stroke="#444" stroke-width="3"/>
-        <rect x="155" y="264" width="216" height="10" rx="3" fill="#333"/>
+    <!-- Frame/chassis -->
+    <rect x="148" y="258" width="230" height="28" rx="6" fill="#222" stroke="#444" stroke-width="3"/>
+    <!-- Frame center rail -->
+    <rect x="155" y="264" width="216" height="10" rx="3" fill="#333"/>
 
-        <circle cx="190" cy="308" r="28" fill="#111" stroke="#ff6d00" stroke-width="5"/>
-    <circle cx="190" cy="308" r="14" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
-    <circle cx="190" cy="308" r="5" fill="#ff3d00"/>
+    <!-- Wheels x4 -->
+    <circle cx="190" cy="308" r="28" fill="#111" stroke="#ff6d00" stroke-width="5"/>
+    <circle cx="190" cy="308" r="14" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
+    <circle cx="190" cy="308" r="5" fill="#ff3d00"/>
 
-    <circle cx="248" cy="314" r="30" fill="#111" stroke="#ff6d00" stroke-width="5"/>
-    <circle cx="248" cy="314" r="15" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
-    <circle cx="248" cy="314" r="5" fill="#ff3d00"/>
+    <circle cx="248" cy="314" r="30" fill="#111" stroke="#ff6d00" stroke-width="5"/>
+    <circle cx="248" cy="314" r="15" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
+    <circle cx="248" cy="314" r="5" fill="#ff3d00"/>
 
-    <circle cx="308" cy="314" r="30" fill="#111" stroke="#ff6d00" stroke-width="5"/>
-    <circle cx="308" cy="314" r="15" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
-    <circle cx="308" cy="314" r="5" fill="#ff3d00"/>
+    <circle cx="308" cy="314" r="30" fill="#111" stroke="#ff6d00" stroke-width="5"/>
+    <circle cx="308" cy="314" r="15" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
+    <circle cx="308" cy="314" r="5" fill="#ff3d00"/>
 
-    <circle cx="366" cy="308" r="28" fill="#111" stroke="#ff6d00" stroke-width="5"/>
-    <circle cx="366" cy="308" r="14" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
-    <circle cx="366" cy="308" r="5" fill="#ff3d00"/>
+    <circle cx="366" cy="308" r="28" fill="#111" stroke="#ff6d00" stroke-width="5"/>
+    <circle cx="366" cy="308" r="14" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
+    <circle cx="366" cy="308" r="5" fill="#ff3d00"/>
 
-        <line x1="90" y1="295" x2="145" y2="295" stroke="#ff3d00" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
-    <line x1="75" y1="310" x2="145" y2="310" stroke="#ff6d00" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-    <line x1="85" y1="325" x2="145" y2="325" stroke="#ffd600" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+    <!-- Speed lines -->
+    <line x1="90" y1="295" x2="145" y2="295" stroke="#ff3d00" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+    <line x1="75" y1="310" x2="145" y2="310" stroke="#ff6d00" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+    <line x1="85" y1="325" x2="145" y2="325" stroke="#ffd600" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
 
-        <text x="256" y="410" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" fill="#ff3d00" text-anchor="middle" letter-spacing="6">REP</text>
-    <text x="256" y="455" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#ffd600" text-anchor="middle" letter-spacing="8">PRO</text>
-  </svg>`;
+    <!-- REP text -->
+    <text x="256" y="410" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" fill="#ff3d00" text-anchor="middle" letter-spacing="6">REP</text>
+    <text x="256" y="455" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#ffd600" text-anchor="middle" letter-spacing="8">PRO</text>
+  </svg>`;
 
-  // Convert SVG to PNG via canvas for apple-touch-icon
-  const canvas = document.createElement('canvas');
-  canvas.width = 512; canvas.height = 512;
-  const ctx = canvas.getContext('2d');
-  const img = new Image();
-  const svgBlob = new Blob([iconSVG], { type: 'image/svg+xml' });
-  const svgUrl = URL.createObjectURL(svgBlob);
+  // Convert SVG to PNG via canvas for apple-touch-icon
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  const svgBlob = new Blob([iconSVG], { type: 'image/svg+xml' });
+  const svgUrl = URL.createObjectURL(svgBlob);
 
-  img.onload = function() {
-    ctx.drawImage(img, 0, 0, 512, 512);
-    URL.revokeObjectURL(svgUrl);
-    const pngUrl = canvas.toDataURL('image/png');
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0, 512, 512);
+    URL.revokeObjectURL(svgUrl);
+    const pngUrl = canvas.toDataURL('image/png');
 
-    // Set apple touch icon
-    document.getElementById('appleIcon').href = pngUrl;
+    // Set apple touch icon
+    document.getElementById('appleIcon').href = pngUrl;
 
-    // Build manifest with inline icon
-    const manifest = {
-      name: 'Rep Counter Pro',
-      short_name: 'RepPro',
-      description: 'Inline skate rep counter',
-      start_url: '.',
-      display: 'standalone',
-      background_color: '#0a0a0a',
-      theme_color: '#0a0a0a',
-      orientation: 'portrait',
-      icons: [
-        { src: pngUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-        { src: pngUrl, sizes: '192x192', type: 'image/png' }
-      ]
-    };
-    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-    const manifestUrl = URL.createObjectURL(manifestBlob);
-    document.getElementById('manifestLink').href = manifestUrl;
-  };
-  img.src = svgUrl;
+    // Build manifest with inline icon
+    const manifest = {
+      name: 'Rep Counter Pro',
+      short_name: 'RepPro',
+      description: 'Inline skate rep counter',
+      start_url: '.',
+      display: 'standalone',
+      background_color: '#0a0a0a',
+      theme_color: '#0a0a0a',
+      orientation: 'portrait',
+      icons: [
+        { src: pngUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+        { src: pngUrl, sizes: '192x192', type: 'image/png' }
+      ]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+    document.getElementById('manifestLink').href = manifestUrl;
+  };
+  img.src = svgUrl;
 
-  // Register service worker inline via blob
-  if ('serviceWorker' in navigator) {
-    const swCode = `
-      const CACHE = 'repcounter-v1';
-      self.addEventListener('install', e => {
-        self.skipWaiting();
-      });
-      self.addEventListener('activate', e => {
-        e.waitUntil(self.clients.claim());
-      });
-      self.addEventListener('fetch', e => {
-        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-      });
-    `;
-    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl, { scope: '/' }).catch(() => {
-      // Blob SW scope might be restricted — silently fail, app still works
-    });
-  }
+  // Register service worker inline via blob
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      const CACHE = 'repcounter-v1';
+      self.addEventListener('install', e => {
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        e.waitUntil(self.clients.claim());
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+      });
+    `;
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl, { scope: '/' }).catch(() => {
+      // Blob SW scope might be restricted — silently fail, app still works
+    });
+  }
 })();
 </script>
 </body>
