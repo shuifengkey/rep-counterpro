@@ -820,7 +820,7 @@
 <!-- ACTION ROW -->
 <div class="action-row" style="padding: 0 16px 16px; max-width:100%;">
   <button class="action-btn auto-btn" id="autoBtn" onclick="toggleAuto()">🤖 AUTO</button>
-  <button class="action-btn stop-btn" onclick="stopAll()">⏹ STOP</button>
+  <button class="action-btn stop-btn" id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
   <button class="action-btn reset-btn" onclick="resetSet()">↺ RESET</button>
 </div>
 
@@ -1430,11 +1430,45 @@ function startAutoSet(immediate = false) {
   }
 }
 
-// ===== STOP / RESET =====
+// ===== PAUSE / RESUME =====
+let isPaused = false;
+
+function togglePause() {
+  if (isPaused) {
+    // RESUME — restart auto immediately, no countdown
+    isPaused = false;
+    document.getElementById('pauseBtn').textContent = '⏸ PAUSE';
+    document.getElementById('pauseBtn').style.borderColor = '';
+    document.getElementById('pauseBtn').style.color = '';
+    if (isAutoMode) {
+      startSessionTimer();
+      acquireWakeLock();
+      startAutoSet(true);
+    }
+  } else {
+    // PAUSE
+    isPaused = true;
+    clearInterval(autoTimer);
+    clearTimeout(autoTimer);
+    autoTimer = null;
+    clearInterval(restTimer);
+    restTimer = null;
+    isResting = false;
+    stopSessionTimer();
+    window.speechSynthesis?.cancel();
+    document.getElementById('restOverlay').classList.remove('show');
+    document.getElementById('pauseBtn').textContent = '▶ RESUME';
+    document.getElementById('pauseBtn').style.borderColor = 'var(--green)';
+    document.getElementById('pauseBtn').style.color = 'var(--green)';
+  }
+}
+
 function stopAll() {
+  isPaused = false;
   isAutoMode = false;
   isStopped = true;
   clearInterval(autoTimer);
+  clearTimeout(autoTimer);
   autoTimer = null;
   clearInterval(restTimer);
   restTimer = null;
@@ -1444,12 +1478,15 @@ function stopAll() {
   document.getElementById('autoBtn').classList.remove('on');
   document.getElementById('autoBar').classList.remove('show');
   document.getElementById('restOverlay').classList.remove('show');
+  document.getElementById('pauseBtn').textContent = '⏸ PAUSE';
+  document.getElementById('pauseBtn').style.borderColor = '';
+  document.getElementById('pauseBtn').style.color = '';
   releaseWakeLock();
   updateUI();
 }
 
 function resetSet() {
-  // Reset toàn bộ buổi tập
+  isPaused = false;
   clearInterval(autoTimer);
   autoTimer = null;
   clearInterval(restTimer);
@@ -1583,55 +1620,115 @@ document.addEventListener('touchend', e => {
 (function setupPWA() {
   // Generate icon as SVG → PNG via canvas
   const iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+      <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0d0d0d"/>
+        <stop offset="100%" stop-color="#1a0800"/>
+      </linearGradient>
+      <linearGradient id="bladeGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#ff6d00"/>
+        <stop offset="100%" stop-color="#ffd600"/>
+      </linearGradient>
+      <linearGradient id="bootGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2a2a2a"/>
+        <stop offset="100%" stop-color="#111"/>
+      </linearGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="4" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
     <!-- Background -->
-    <rect width="512" height="512" rx="100" fill="#0a0a0a"/>
-    <!-- Outer ring -->
-    <circle cx="256" cy="256" r="230" fill="none" stroke="#ff3d00" stroke-width="14"/>
+    <rect width="512" height="512" rx="90" fill="url(#bgGrad)"/>
 
-    <!-- Inline skate boot -->
-    <!-- Boot upper -->
-    <path d="M155 200 C155 160 185 130 230 125 L310 125 C340 125 360 145 360 175 L360 230 C360 245 350 258 336 262 L180 262 C165 262 155 250 155 235 Z" fill="#1a1a1a" stroke="#ff3d00" stroke-width="6"/>
-    <!-- Boot cuff highlight -->
-    <path d="M165 165 C165 148 178 138 195 138 L310 138 C328 138 348 150 348 168" fill="none" stroke="#ff6d00" stroke-width="4" stroke-linecap="round"/>
-    <!-- Boot laces -->
-    <line x1="210" y1="145" x2="210" y2="255" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
-    <line x1="240" y1="138" x2="240" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
-    <line x1="270" y1="138" x2="270" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
-    <line x1="300" y1="140" x2="300" y2="258" stroke="#ffd600" stroke-width="3" stroke-dasharray="8,6"/>
-    <!-- Buckle straps -->
-    <rect x="155" y="185" width="205" height="16" rx="4" fill="#ff3d00" opacity="0.9"/>
-    <rect x="155" y="220" width="205" height="16" rx="4" fill="#ff3d00" opacity="0.7"/>
+    <!-- Speed burst lines radiating from skate -->
+    <g opacity="0.25" stroke="#ff3d00" stroke-linecap="round">
+      <line x1="60" y1="200" x2="160" y2="240" stroke-width="3"/>
+      <line x1="45" y1="240" x2="155" y2="255" stroke-width="5"/>
+      <line x1="50" y1="278" x2="155" y2="270" stroke-width="4"/>
+      <line x1="60" y1="315" x2="158" y2="288" stroke-width="2.5"/>
+      <line x1="80" y1="348" x2="165" y2="305" stroke-width="2"/>
+    </g>
 
-    <!-- Frame/chassis -->
-    <rect x="148" y="258" width="230" height="28" rx="6" fill="#222" stroke="#444" stroke-width="3"/>
-    <!-- Frame center rail -->
-    <rect x="155" y="264" width="216" height="10" rx="3" fill="#333"/>
+    <!-- Long speed streaks behind wheels -->
+    <g filter="url(#glow)" opacity="0.9">
+      <line x1="52" y1="338" x2="185" y2="338" stroke="#ff3d00" stroke-width="5" stroke-linecap="round"/>
+      <line x1="35" y1="355" x2="175" y2="355" stroke="#ff6d00" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="48" y1="370" x2="168" y2="370" stroke="#ffd600" stroke-width="2" stroke-linecap="round"/>
+    </g>
 
-    <!-- Wheels x4 -->
-    <circle cx="190" cy="308" r="28" fill="#111" stroke="#ff6d00" stroke-width="5"/>
-    <circle cx="190" cy="308" r="14" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
-    <circle cx="190" cy="308" r="5" fill="#ff3d00"/>
+    <!-- SKATE BODY — low-profile speed skate silhouette -->
+    <!-- Boot — low cut speed skate style -->
+    <path d="
+      M 165 230
+      C 165 195 185 168 220 158
+      L 340 155
+      C 368 155 385 170 385 195
+      L 385 235
+      C 385 248 375 258 362 258
+      L 180 258
+      C 170 258 165 248 165 237 Z
+    " fill="url(#bootGrad)" stroke="#ff3d00" stroke-width="5"/>
 
-    <circle cx="248" cy="314" r="30" fill="#111" stroke="#ff6d00" stroke-width="5"/>
-    <circle cx="248" cy="314" r="15" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
-    <circle cx="248" cy="314" r="5" fill="#ff3d00"/>
+    <!-- Boot top highlight stripe -->
+    <path d="M 172 175 C 178 162 196 158 216 158 L 340 155 C 362 155 380 166 383 180"
+      fill="none" stroke="#ff3d00" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
 
-    <circle cx="308" cy="314" r="30" fill="#111" stroke="#ff6d00" stroke-width="5"/>
-    <circle cx="308" cy="314" r="15" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
-    <circle cx="308" cy="314" r="5" fill="#ff3d00"/>
+    <!-- Boot color accent stripe -->
+    <path d="M 168 215 L 383 210" stroke="#ff6d00" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 168 232 L 383 228" stroke="#ffd600" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
 
-    <circle cx="366" cy="308" r="28" fill="#111" stroke="#ff6d00" stroke-width="5"/>
-    <circle cx="366" cy="308" r="14" fill="#1a1a1a" stroke="#555" stroke-width="3"/>
-    <circle cx="366" cy="308" r="5" fill="#ff3d00"/>
+    <!-- Lace eyelets -->
+    <circle cx="230" cy="185" r="5" fill="#ffd600" opacity="0.8"/>
+    <circle cx="255" cy="180" r="5" fill="#ffd600" opacity="0.8"/>
+    <circle cx="280" cy="177" r="5" fill="#ffd600" opacity="0.8"/>
+    <circle cx="305" cy="175" r="5" fill="#ffd600" opacity="0.8"/>
+    <circle cx="330" cy="173" r="5" fill="#ffd600" opacity="0.8"/>
+    <!-- Lace cross lines -->
+    <line x1="230" y1="185" x2="255" y2="180" stroke="#ffd600" stroke-width="2" opacity="0.5"/>
+    <line x1="255" y1="180" x2="280" y2="177" stroke="#ffd600" stroke-width="2" opacity="0.5"/>
+    <line x1="280" y1="177" x2="305" y2="175" stroke="#ffd600" stroke-width="2" opacity="0.5"/>
+    <line x1="305" y1="175" x2="330" y2="173" stroke="#ffd600" stroke-width="2" opacity="0.5"/>
 
-    <!-- Speed lines -->
-    <line x1="90" y1="295" x2="145" y2="295" stroke="#ff3d00" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
-    <line x1="75" y1="310" x2="145" y2="310" stroke="#ff6d00" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-    <line x1="85" y1="325" x2="145" y2="325" stroke="#ffd600" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+    <!-- Cuff buckle strap -->
+    <rect x="165" y="240" width="220" height="14" rx="4" fill="#ff3d00" opacity="0.85"/>
+    <rect x="270" y="237" width="30" height="20" rx="3" fill="#ffd600" opacity="0.9"/>
 
-    <!-- REP text -->
-    <text x="256" y="410" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" fill="#ff3d00" text-anchor="middle" letter-spacing="6">REP</text>
-    <text x="256" y="455" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#ffd600" text-anchor="middle" letter-spacing="8">PRO</text>
+    <!-- Frame / chassis — long speed frame -->
+    <path d="M 158 258 L 420 258 L 415 278 L 163 278 Z"
+      fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+    <!-- Frame rail -->
+    <line x1="165" y1="268" x2="412" y2="268" stroke="#ff3d00" stroke-width="2" opacity="0.6"/>
+
+    <!-- 4 WHEELS — large diameter, evenly spaced -->
+    <g filter="url(#glow)">
+      <!-- Wheel 1 -->
+      <circle cx="200" cy="316" r="32" fill="#111" stroke="url(#bladeGrad)" stroke-width="5"/>
+      <circle cx="200" cy="316" r="16" fill="#0d0d0d" stroke="#333" stroke-width="2"/>
+      <circle cx="200" cy="316" r="4" fill="#ff3d00"/>
+
+      <!-- Wheel 2 -->
+      <circle cx="268" cy="320" r="34" fill="#111" stroke="url(#bladeGrad)" stroke-width="5"/>
+      <circle cx="268" cy="320" r="17" fill="#0d0d0d" stroke="#333" stroke-width="2"/>
+      <circle cx="268" cy="320" r="4" fill="#ff3d00"/>
+
+      <!-- Wheel 3 -->
+      <circle cx="338" cy="320" r="34" fill="#111" stroke="url(#bladeGrad)" stroke-width="5"/>
+      <circle cx="338" cy="320" r="17" fill="#0d0d0d" stroke="#333" stroke-width="2"/>
+      <circle cx="338" cy="320" r="4" fill="#ff3d00"/>
+
+      <!-- Wheel 4 -->
+      <circle cx="406" cy="316" r="32" fill="#111" stroke="url(#bladeGrad)" stroke-width="5"/>
+      <circle cx="406" cy="316" r="16" fill="#0d0d0d" stroke="#333" stroke-width="2"/>
+      <circle cx="406" cy="316" r="4" fill="#ff3d00"/>
+    </g>
+
+    <!-- SPEED text bottom -->
+    <text x="256" y="418" font-family="Arial Black,sans-serif" font-size="44" font-weight="900"
+      fill="#ff3d00" text-anchor="middle" letter-spacing="4" filter="url(#glow)">SPEED</text>
+    <text x="256" y="460" font-family="Arial,sans-serif" font-size="22" font-weight="700"
+      fill="#ffd600" text-anchor="middle" letter-spacing="10">SKATE</text>
   </svg>`;
 
   // Convert SVG to PNG via canvas for apple-touch-icon
