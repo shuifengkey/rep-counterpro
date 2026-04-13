@@ -122,6 +122,33 @@
     color: var(--gold);
   }
 
+  .stat-val-wrap {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px;
+    line-height: 1;
+  }
+
+  .stat-done {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--green);
+  }
+
+  .stat-sep {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .stat-tgt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(255,214,0,0.5);
+  }
+
   .stat-val.green { color: var(--green); }
   .stat-val.accent { color: var(--accent); }
 
@@ -209,7 +236,14 @@
     margin-top: 2px;
   }
 
-  .rep-of span { color: var(--gold); }
+  .rep-of span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(255,214,0,0.4);
+    line-height: 1;
+    vertical-align: middle;
+  }
 
   /* ===== TAP BUTTON ===== */
   .tap-btn-wrap {
@@ -748,19 +782,27 @@
 <!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stat-chip">
-    <div class="stat-val green" id="statSets">0</div>
+    <div class="stat-val-wrap">
+      <span class="stat-done" id="statSets">0</span>
+      <span class="stat-sep" id="statSetsSep" style="display:none">/</span>
+      <span class="stat-tgt" id="statSetsTarget" style="display:none">0</span>
+    </div>
     <div class="stat-label">Sets</div>
   </div>
   <div class="stat-chip">
     <div class="stat-val" id="statTarget">10</div>
-    <div class="stat-label">Target</div>
+    <div class="stat-label">Rep/Set</div>
   </div>
   <div class="stat-chip">
     <div class="stat-val accent" id="statTotal">0</div>
-    <div class="stat-label">Total Reps</div>
+    <div class="stat-label">Total</div>
   </div>
   <div class="stat-chip">
-    <div class="stat-val" id="statTime" style="color:var(--text)">0:00</div>
+    <div class="stat-val-wrap">
+      <span class="stat-done" id="statTime">0:00</span>
+      <span class="stat-sep" id="statTimeSep" style="display:none">/</span>
+      <span class="stat-tgt" id="statTimeTarget" style="display:none">0m</span>
+    </div>
     <div class="stat-label">Time</div>
   </div>
 </div>
@@ -771,9 +813,6 @@
     <div class="progress-fill" id="progressFill"></div>
   </div>
 </div>
-
-<!-- SET HISTORY -->
-<div class="history-row" id="historyRow"></div>
 
 <!-- MAIN -->
 <div class="main">
@@ -802,7 +841,7 @@
   <div class="rep-display">
     <div class="rep-label">REPS THIS SET</div>
     <div class="rep-number" id="repNumber">0</div>
-    <div class="rep-of">/ <span id="repOfTarget">10</span> target</div>
+
   </div>
 
   <!-- TAP BUTTON -->
@@ -813,13 +852,12 @@
       <div class="tap-btn-text">TAP</div>
     </div>
   </div>
-
-  <div class="timer-display" id="timerDisplay">00:00</div>
 </div>
 
 <!-- ACTION ROW -->
 <div class="action-row" style="padding: 0 16px 16px; max-width:100%;">
   <button class="action-btn auto-btn" id="autoBtn" onclick="toggleAuto()">🤖 AUTO</button>
+  <button class="action-btn" id="metroBtn" onclick="toggleMetronome()" style="border-color:#a855f7;color:#a855f7;">🎵 METRO</button>
   <button class="action-btn stop-btn" id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
   <button class="action-btn reset-btn" onclick="resetSet()">↺ RESET</button>
 </div>
@@ -1276,9 +1314,115 @@ function updateTimerDisplay() {
   const m = Math.floor(sessionSeconds / 60);
   const s = sessionSeconds % 60;
   const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  document.getElementById('timerDisplay').textContent = str;
   document.getElementById('statTime').textContent = str;
 }
+
+// ===== METRONOME =====
+let isMetronome = false;
+let metroTimer = null;
+let metroBeat = 0; // 0 = beat 1, 1 = beat 2
+
+function toggleMetronome() {
+  if (isMetronome) {
+    stopMetronome();
+  } else {
+    if (isAutoMode) {
+      isAutoMode = false;
+      clearInterval(autoTimer); clearTimeout(autoTimer);
+      autoTimer = null;
+      document.getElementById('autoBtn').classList.remove('on');
+      document.getElementById('autoBar').classList.remove('show');
+    }
+    isMetronome = true;
+    metroBeat = 0;
+    document.getElementById('metroBtn').style.background = 'rgba(168,85,247,0.15)';
+    document.getElementById('metroBtn').style.borderColor = '#a855f7';
+    document.getElementById('metroBtn').style.color = '#a855f7';
+    document.getElementById('metroBtn').textContent = '🎵 ON';
+    acquireWakeLock();
+    startSessionTimer();
+    scheduleMetro();
+  }
+}
+
+function scheduleMetro() {
+  if (!isMetronome) return;
+  const ctx = getAudio();
+  const interval = 60 / settings.autoRpm; // seconds per beat
+  let nextBeatTime = ctx.currentTime + 0.05; // start slightly ahead
+  let beat = 0; // 0=first, toggles
+
+  function schedule() {
+    if (!isMetronome) return;
+
+    // Schedule up to 100ms ahead
+    while (nextBeatTime < ctx.currentTime + 0.1) {
+      const isOne = beat === 0;
+      const t = nextBeatTime;
+
+      // Schedule audio at exact time
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = isOne ? 1200 : 800;
+      gain.gain.setValueAtTime(isOne ? 0.5 : 0.3, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+      osc.start(t);
+      osc.stop(t + 0.09);
+
+      // Schedule UI update at beat time
+      const delay = Math.max(0, (t - ctx.currentTime) * 1000);
+      const beatCopy = beat;
+      setTimeout(() => {
+        if (!isMetronome) return;
+        const one = beatCopy === 0;
+        document.getElementById('repNumber').textContent = one ? '1' : '2';
+        const btn = document.getElementById('tapBtn');
+        btn.style.borderColor = '#a855f7';
+        setTimeout(() => { btn.style.borderColor = ''; }, 80);
+        // Metro: no voice, beep only
+
+        if (!one) {
+          currentSet++;
+          totalReps += 2;
+          updateStatsOnly();
+          if (settings.targetSets > 0 && currentSet >= settings.targetSets) {
+            stopMetronome(); stopSessionTimer();
+            vib([200,100,200,100,400]); playDoneBeep();
+            document.getElementById('doneSub').textContent = 'ALL SETS DONE 🔥';
+            document.getElementById('doneOverlay').classList.add('show');
+          }
+          if (settings.targetTime > 0 && sessionSeconds >= settings.targetTime * 60) {
+            stopMetronome(); stopSessionTimer();
+            vib([200,100,200,100,400]); playDoneBeep();
+            document.getElementById('doneSub').textContent = 'TIME TARGET REACHED';
+            document.getElementById('doneOverlay').classList.add('show');
+          }
+        }
+      }, delay);
+
+      beat = beat === 0 ? 1 : 0;
+      nextBeatTime += interval;
+    }
+
+    metroTimer = setTimeout(schedule, 25); // check every 25ms
+  }
+
+  schedule();
+}
+
+function stopMetronome() {
+  isMetronome = false;
+  clearTimeout(metroTimer);
+  clearInterval(metroTimer);
+  metroTimer = null;
+  metroBeat = 0;
+  document.getElementById('metroBtn').style.background = '';
+  document.getElementById('metroBtn').style.borderColor = '#a855f7';
+  document.getElementById('metroBtn').style.color = '#a855f7';
+  document.getElementById('metroBtn').textContent = '🎵 METRO';
+}
+
 
 // ===== MAIN COUNT =====
 function handleTap() {
@@ -1473,6 +1617,7 @@ function stopAll() {
   clearInterval(restTimer);
   restTimer = null;
   isResting = false;
+  stopMetronome();
   stopSessionTimer();
   window.speechSynthesis?.cancel();
   document.getElementById('autoBtn').classList.remove('on');
@@ -1487,6 +1632,7 @@ function stopAll() {
 
 function resetSet() {
   isPaused = false;
+  stopMetronome();
   clearInterval(autoTimer);
   autoTimer = null;
   clearInterval(restTimer);
@@ -1508,7 +1654,6 @@ function resetSet() {
   sessionSeconds = 0;
   sessionStartTime = null;
   setHistory = [];
-  renderHistory();
   updateTimerDisplay();
   updateUI();
 }
@@ -1526,7 +1671,6 @@ function resetAll() {
   setHistory = [];
   isStopped = false;
   document.getElementById('doneOverlay').classList.remove('show');
-  renderHistory();
   updateTimerDisplay();
   updateUI();
 }
@@ -1538,36 +1682,60 @@ function finishSession(msg) {
   playDoneBeep();
   document.getElementById('doneSub').textContent = msg;
   document.getElementById('doneOverlay').classList.add('show');
-  renderHistory();
 }
 
 // ===== UI UPDATE =====
 function updateUI() {
   const rep = settings.targetReps;
+  const tsets = settings.targetSets;
+  const ttime = settings.targetTime;
+
   document.getElementById('repNumber').textContent = currentRep;
-  document.getElementById('repOfTarget').textContent = rep > 0 ? rep : '∞';
-  document.getElementById('statSets').textContent = currentSet;
   document.getElementById('statTarget').textContent = rep > 0 ? rep : '∞';
   document.getElementById('statTotal').textContent = totalReps;
 
-  // Progress
+  // Sets: show done / target if target set
+  document.getElementById('statSets').textContent = currentSet;
+  if (tsets > 0) {
+    document.getElementById('statSetsSep').style.display = '';
+    document.getElementById('statSetsTarget').style.display = '';
+    document.getElementById('statSetsTarget').textContent = tsets;
+  } else {
+    document.getElementById('statSetsSep').style.display = 'none';
+    document.getElementById('statSetsTarget').style.display = 'none';
+  }
+
+  // Time: show elapsed / target if target set
+  if (ttime > 0) {
+    document.getElementById('statTimeSep').style.display = '';
+    document.getElementById('statTimeTarget').style.display = '';
+    document.getElementById('statTimeTarget').textContent = ttime + 'm';
+  } else {
+    document.getElementById('statTimeSep').style.display = 'none';
+    document.getElementById('statTimeTarget').style.display = 'none';
+  }
+
+  // Progress bar
   let pct = 0;
   if (rep > 0 && currentRep <= rep) pct = (currentRep / rep) * 100;
-  if (rep === 0) pct = 0;
   document.getElementById('progressFill').style.width = pct + '%';
-
-  renderHistory();
 }
 
-// Update stats only, keep repNumber display unchanged (used between sets when rest=0)
 function updateStatsOnly() {
   const rep = settings.targetReps;
-  document.getElementById('repOfTarget').textContent = rep > 0 ? rep : '∞';
-  document.getElementById('statSets').textContent = currentSet;
+  const tsets = settings.targetSets;
   document.getElementById('statTarget').textContent = rep > 0 ? rep : '∞';
   document.getElementById('statTotal').textContent = totalReps;
-  document.getElementById('progressFill').style.width = '100%'; // show full bar until next rep
-  renderHistory();
+  document.getElementById('statSets').textContent = currentSet;
+  if (tsets > 0) {
+    document.getElementById('statSetsSep').style.display = '';
+    document.getElementById('statSetsTarget').style.display = '';
+    document.getElementById('statSetsTarget').textContent = tsets;
+  } else {
+    document.getElementById('statSetsSep').style.display = 'none';
+    document.getElementById('statSetsTarget').style.display = 'none';
+  }
+  document.getElementById('progressFill').style.width = '100%';
 }
 
 // ===== HISTORY =====
