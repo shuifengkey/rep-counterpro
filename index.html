@@ -848,7 +848,16 @@
   <div class="tap-btn-wrap">
     <div class="tap-ripple" id="tapRipple"></div>
     <div class="tap-btn" id="tapBtn" onpointerdown="handleTap()">
-      <div class="tap-btn-icon">💪</div>
+      <div class="tap-btn-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Lightning bolt -->
+          <path d="M28 4L10 26H22L20 44L38 22H26L28 4Z" fill="#ff3d00" stroke="#ff6d00" stroke-width="1.5" stroke-linejoin="round"/>
+          <!-- Speed lines -->
+          <line x1="4" y1="18" x2="10" y2="18" stroke="#ffd600" stroke-width="2" stroke-linecap="round"/>
+          <line x1="2" y1="24" x2="8" y2="24" stroke="#ffd600" stroke-width="2" stroke-linecap="round"/>
+          <line x1="4" y1="30" x2="10" y2="30" stroke="#ffd600" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
       <div class="tap-btn-text">TAP</div>
     </div>
   </div>
@@ -856,10 +865,10 @@
 
 <!-- ACTION ROW -->
 <div class="action-row" style="padding: 0 16px 16px; max-width:100%;">
-  <button class="action-btn auto-btn" id="autoBtn" onclick="toggleAuto()">🤖 AUTO</button>
-  <button class="action-btn" id="metroBtn" onclick="toggleMetronome()" style="border-color:#a855f7;color:#a855f7;">🎵 METRO</button>
+  <button class="action-btn auto-btn" id="autoBtn" onclick="toggleAuto()">▶▶ AUTO</button>
+  <button class="action-btn" id="metroBtn" onclick="toggleMetronome()" style="border-color:#a855f7;color:#a855f7;">◈ METRO</button>
   <button class="action-btn stop-btn" id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
-  <button class="action-btn reset-btn" onclick="resetSet()">↺ RESET</button>
+  <button class="action-btn reset-btn" onclick="resetSet()">⟳ RESET</button>
 </div>
 
 <!-- SETTINGS PANEL -->
@@ -1632,6 +1641,9 @@ function stopAll() {
 
 function resetSet() {
   isPaused = false;
+  document.getElementById('pauseBtn').textContent = '⏸ PAUSE';
+  document.getElementById('pauseBtn').style.borderColor = '';
+  document.getElementById('pauseBtn').style.color = '';
   stopMetronome();
   clearInterval(autoTimer);
   autoTimer = null;
