@@ -271,8 +271,12 @@
 
   .tap-ripple.go { animation: rippleOut 0.5s ease-out forwards; }
 
-  .tap-btn {
-    width: 160px;
+  .tap-btn.locked {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: var(--muted);
+    box-shadow: none;
+  }
     height: 160px;
     border-radius: 50%;
     background: radial-gradient(circle at 35% 35%, #2a1a1a, #1a0a0a);
@@ -1435,13 +1439,13 @@ function stopMetronome() {
 
 // ===== MAIN COUNT =====
 function handleTap() {
-  if (isResting) return;
+  if (isResting || isAutoMode || isMetronome) return;
   if (isStopped) {
     isStopped = false;
     sessionStartTime = Date.now();
   }
   startSessionTimer();
-  acquireWakeLock(); // must be inside user gesture for NoSleep to work
+  acquireWakeLock();
   doRep();
 }
 
@@ -1588,31 +1592,42 @@ let isPaused = false;
 
 function togglePause() {
   if (isPaused) {
-    // RESUME — restart auto immediately, no countdown
+    // RESUME
     isPaused = false;
     document.getElementById('pauseBtn').textContent = '⏸ PAUSE';
     document.getElementById('pauseBtn').style.borderColor = '';
     document.getElementById('pauseBtn').style.color = '';
-    if (isAutoMode) {
+    if (isMetronome) {
+      startSessionTimer();
+      acquireWakeLock();
+      scheduleMetro();
+    } else if (isAutoMode) {
       startSessionTimer();
       acquireWakeLock();
       startAutoSet(true);
     }
+    updateUI();
   } else {
     // PAUSE
     isPaused = true;
+    // Stop auto
     clearInterval(autoTimer);
     clearTimeout(autoTimer);
     autoTimer = null;
     clearInterval(restTimer);
     restTimer = null;
     isResting = false;
+    // Stop metro scheduler
+    clearTimeout(metroTimer);
+    clearInterval(metroTimer);
+    metroTimer = null;
     stopSessionTimer();
     window.speechSynthesis?.cancel();
     document.getElementById('restOverlay').classList.remove('show');
     document.getElementById('pauseBtn').textContent = '▶ RESUME';
     document.getElementById('pauseBtn').style.borderColor = 'var(--green)';
     document.getElementById('pauseBtn').style.color = 'var(--green)';
+    updateUI();
   }
 }
 
@@ -1725,6 +1740,14 @@ function updateUI() {
   } else {
     document.getElementById('statTimeSep').style.display = 'none';
     document.getElementById('statTimeTarget').style.display = 'none';
+  }
+
+  // Lock tap button when auto or metro running
+  const tapBtn = document.getElementById('tapBtn');
+  if (isAutoMode || isMetronome) {
+    tapBtn.classList.add('locked');
+  } else {
+    tapBtn.classList.remove('locked');
   }
 
   // Progress bar
