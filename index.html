@@ -4,12 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Rep Counter Pro</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="RepPro">
-<meta name="theme-color" content="#0a0a0a">
-<link rel="apple-touch-icon" id="appleIcon">
-<link rel="manifest" id="manifestLink">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -122,33 +116,6 @@
     color: var(--gold);
   }
 
-  .stat-val-wrap {
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 2px;
-    line-height: 1;
-  }
-
-  .stat-done {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    color: var(--green);
-  }
-
-  .stat-sep {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    color: var(--muted);
-  }
-
-  .stat-tgt {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    color: var(--gold);
-    text-shadow: 0 0 10px rgba(255,214,0,0.5);
-  }
-
   .stat-val.green { color: var(--green); }
   .stat-val.accent { color: var(--accent); }
 
@@ -236,14 +203,7 @@
     margin-top: 2px;
   }
 
-  .rep-of span {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(255,214,0,0.4);
-    line-height: 1;
-    vertical-align: middle;
-  }
+  .rep-of span { color: var(--gold); }
 
   /* ===== TAP BUTTON ===== */
   .tap-btn-wrap {
@@ -271,12 +231,8 @@
 
   .tap-ripple.go { animation: rippleOut 0.5s ease-out forwards; }
 
-  .tap-btn.locked {
-    opacity: 0.35;
-    cursor: not-allowed;
-    border-color: var(--muted);
-    box-shadow: none;
-  }
+  .tap-btn {
+    width: 160px;
     height: 160px;
     border-radius: 50%;
     background: radial-gradient(circle at 35% 35%, #2a1a1a, #1a0a0a);
@@ -424,71 +380,6 @@
     letter-spacing: 3px;
     border: none;
     border-radius: 8px;
-    cursor: pointer;
-  }
-
-  /* ===== COUNTDOWN OVERLAY ===== */
-  .countdown-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.88);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 150;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    gap: 10px;
-    backdrop-filter: blur(6px);
-  }
-
-  .countdown-overlay.show { opacity: 1; pointer-events: all; }
-
-  .cd-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #4fc3f7;
-  }
-
-  .cd-number {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 130px;
-    line-height: 1;
-    color: #4fc3f7;
-    text-shadow: 0 0 60px rgba(79,195,247,0.5);
-    animation: cdPop 1s ease forwards;
-  }
-
-  @keyframes cdPop {
-    0%   { transform: scale(1.4); opacity: 0; }
-    20%  { transform: scale(1.0); opacity: 1; }
-    80%  { transform: scale(1.0); opacity: 1; }
-    100% { transform: scale(0.6); opacity: 0; }
-  }
-
-  .cd-go {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 80px;
-    color: var(--green);
-    text-shadow: 0 0 60px rgba(0,230,118,0.6);
-    letter-spacing: 6px;
-  }
-
-  .cd-cancel {
-    margin-top: 24px;
-    padding: 8px 24px;
-    background: none;
-    border: 1px solid var(--muted);
-    color: var(--muted);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    border-radius: 4px;
     cursor: pointer;
   }
 
@@ -786,27 +677,19 @@
 <!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stat-chip">
-    <div class="stat-val-wrap">
-      <span class="stat-done" id="statSets">0</span>
-      <span class="stat-sep" id="statSetsSep" style="display:none">/</span>
-      <span class="stat-tgt" id="statSetsTarget" style="display:none">0</span>
-    </div>
+    <div class="stat-val green" id="statSets">0</div>
     <div class="stat-label">Sets</div>
   </div>
   <div class="stat-chip">
     <div class="stat-val" id="statTarget">10</div>
-    <div class="stat-label">Rep/Set</div>
+    <div class="stat-label">Target</div>
   </div>
   <div class="stat-chip">
     <div class="stat-val accent" id="statTotal">0</div>
-    <div class="stat-label">Total</div>
+    <div class="stat-label">Total Reps</div>
   </div>
   <div class="stat-chip">
-    <div class="stat-val-wrap">
-      <span class="stat-done" id="statTime">0:00</span>
-      <span class="stat-sep" id="statTimeSep" style="display:none">/</span>
-      <span class="stat-tgt" id="statTimeTarget" style="display:none">0m</span>
-    </div>
+    <div class="stat-val" id="statTime" style="color:var(--text)">0:00</div>
     <div class="stat-label">Time</div>
   </div>
 </div>
@@ -817,6 +700,9 @@
     <div class="progress-fill" id="progressFill"></div>
   </div>
 </div>
+
+<!-- SET HISTORY -->
+<div class="history-row" id="historyRow"></div>
 
 <!-- MAIN -->
 <div class="main">
@@ -835,44 +721,29 @@
     <button class="done-btn" onclick="resetAll()">NEW SESSION</button>
   </div>
 
-  <!-- Countdown Overlay -->
-  <div class="countdown-overlay" id="countdownOverlay">
-    <div class="cd-label">🤖 AUTO STARTING IN</div>
-    <div class="cd-number" id="cdNumber">3</div>
-    <button class="cd-cancel" onclick="cancelCountdown()">CANCEL</button>
-  </div>
-
   <div class="rep-display">
     <div class="rep-label">REPS THIS SET</div>
     <div class="rep-number" id="repNumber">0</div>
-
+    <div class="rep-of">/ <span id="repOfTarget">10</span> target</div>
   </div>
 
   <!-- TAP BUTTON -->
   <div class="tap-btn-wrap">
     <div class="tap-ripple" id="tapRipple"></div>
     <div class="tap-btn" id="tapBtn" onpointerdown="handleTap()">
-      <div class="tap-btn-icon">
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Lightning bolt -->
-          <path d="M28 4L10 26H22L20 44L38 22H26L28 4Z" fill="#ff3d00" stroke="#ff6d00" stroke-width="1.5" stroke-linejoin="round"/>
-          <!-- Speed lines -->
-          <line x1="4" y1="18" x2="10" y2="18" stroke="#ffd600" stroke-width="2" stroke-linecap="round"/>
-          <line x1="2" y1="24" x2="8" y2="24" stroke="#ffd600" stroke-width="2" stroke-linecap="round"/>
-          <line x1="4" y1="30" x2="10" y2="30" stroke="#ffd600" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
+      <div class="tap-btn-icon">💪</div>
       <div class="tap-btn-text">TAP</div>
     </div>
   </div>
+
+  <div class="timer-display" id="timerDisplay">00:00</div>
 </div>
 
 <!-- ACTION ROW -->
 <div class="action-row" style="padding: 0 16px 16px; max-width:100%;">
-  <button class="action-btn auto-btn" id="autoBtn" onclick="toggleAuto()">▶▶ AUTO</button>
-  <button class="action-btn" id="metroBtn" onclick="toggleMetronome()" style="border-color:#a855f7;color:#a855f7;">◈ METRO</button>
-  <button class="action-btn stop-btn" id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
-  <button class="action-btn reset-btn" onclick="resetSet()">⟳ RESET</button>
+  <button class="action-btn auto-btn" id="autoBtn" onclick="toggleAuto()">🤖 AUTO</button>
+  <button class="action-btn stop-btn" onclick="stopAll()">⏹ STOP</button>
+  <button class="action-btn reset-btn" onclick="resetSet()">↺ RESET</button>
 </div>
 
 <!-- SETTINGS PANEL -->
@@ -1007,6 +878,7 @@ let sessionSeconds = 0;
 let restTimer = null;
 let isResting = false;
 let setHistory = [];
+let wakeLock = null;
 let sessionStartTime = null;
 let isStopped = false;
 
@@ -1110,11 +982,9 @@ const voiceVI = ['Một','Hai','Ba','Bốn','Năm','Sáu','Bảy','Tám','Chín'
   'Mười một','Mười hai','Mười ba','Mười bốn','Mười lăm','Mười sáu','Mười bảy','Mười tám','Mười chín','Hai mươi'];
 
 function speak(n) {
-  if (!settings.voiceOn || n < 1) return;
+  if (!settings.voiceOn) return;
   try {
-    const synth = window.speechSynthesis;
-    if (synth.paused) synth.resume();
-
+    window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance();
     if (settings.voiceLang === 'vi') {
       utter.text = n <= 20 ? voiceVI[n-1] : String(n);
@@ -1123,185 +993,27 @@ function speak(n) {
       utter.text = n <= 20 ? voiceEN[n-1] : String(n);
       utter.lang = 'en-US';
     }
-    utter.rate = 1.4;
+    utter.rate = 1.2;
     utter.volume = 1;
-    // Always queue — no cancel. Browser speaks each number in order.
-    synth.speak(utter);
+    window.speechSynthesis.speak(utter);
   } catch(e) {}
 }
-
-// Chrome speechSynthesis keep-alive: ping every 10s to prevent it from hanging
-setInterval(() => {
-  if (!settings.voiceOn) return;
-  const synth = window.speechSynthesis;
-  if (synth.speaking) return;
-  // silent resume trick
-  try { synth.resume(); } catch(e) {}
-}, 10000);
 
 // ===== VIBRATE =====
 function vib(pattern) {
   if (navigator.vibrate) navigator.vibrate(pattern);
 }
 
-// ===== WAKE LOCK — 3-layer approach =====
-// Layer 1: Native Screen Wake Lock API
-// Layer 2: Invisible video loop (inline base64, no CDN needed)
-// Layer 3: AudioContext silent oscillator (keeps audio active = screen hint)
-
-let wakeLock = null;
-let wakeVideo = null;
-let wakeAudioCtx = null;
-let wakeAudioNode = null;
-
-function buildWakeVideo() {
-  // Tiny valid MP4 (black 1x1 pixel, 1s loop) as base64 — no network needed
-  // Source: https://github.com/richtr/NoSleep.js
-  const mp4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAA' +
-    'KFtZGF0AAAC8QYF//+13EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE0MiByMjQ3OSBkZDc5YTYx' +
-    'IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNCAtIGh0dHA6Ly93d3' +
-    'cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0x' +
-    'OjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLj' +
-    'AwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBj' +
-    'cW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYW' +
-    'RzPTYgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBp' +
-    'bnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIG' +
-    'JfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9' +
-    'MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZn' +
-    'Jlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAg' +
-    'cXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAABZ2WIhA' +
-    'Af/qgAAAAMbW9vdgAAAGxtdmhkAAAAAM9ghxbPYIcWAAAD6AAAACoAAQAAAQAAAAAAAAAAAAAAAAEAAAAA' +
-    'AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIXdHJh' +
-    'awAAAFx0a2hkAAAAD89ghxbPYIcWAAAAAQAAAAAAAAArAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAA' +
-    'AAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAFAAAABQAAAAB4bWRpYQAAACBtZGhkAAAAAM9ghxbPYIcWAAB' +
-    'dqAAACAAAABVoZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAVmlkZW9IYW5kbGVyAAAAASNtaW5mAAAA' +
-    'FHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAADjc3Ri' +
-    'bAAAALNzdHNkAAAAAAAAAAEAAACjYXZjMQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAFAAFAASAAAAEgA' +
-    'AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAADVhdmNDAWQACf/hABdnZA' +
-    'AJrNlAmDCJAAAAAwCAAAAPA8WLZYABAAZo6+PLIsAAAAYQnVuc21hcAAAAAAAAAAAAAAAAAAAABhzdHRz' +
-    'AAAAAAAAAAEAAAABAAAAEAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAABAAAA' +
-    'AQAAABRzdHN6AAAAAAAAAAAAAAABAAAAIQAAABRZGAAAAAAAAAAAAAAAAQAAABQAAAA=';
-  const v = document.createElement('video');
-  v.setAttribute('loop', '');
-  v.setAttribute('playsinline', '');
-  v.setAttribute('muted', '');
-  v.setAttribute('preload', 'auto');
-  v.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1';
-  v.src = mp4;
-  document.body.appendChild(v);
-  return v;
-}
-
-async function acquireWakeLock() {
-  if (!settings.wakeLockOn) return;
-
-  // Layer 1: Native API
-  try {
-    if (navigator.wakeLock) {
-      if (!wakeLock || wakeLock.released) {
-        wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener('release', () => {
-          if (settings.wakeLockOn && !isStopped && document.visibilityState === 'visible') {
-            setTimeout(() => acquireWakeLock(), 500);
-          }
-        });
-      }
-    }
-  } catch(e) {}
-
-  // Layer 2: Video loop (must be triggered by user gesture)
-  try {
-    if (!wakeVideo) wakeVideo = buildWakeVideo();
-    await wakeVideo.play();
-  } catch(e) {}
-
-  // Layer 3: Silent AudioContext (keeps audio pipeline alive)
-  try {
-    if (!wakeAudioCtx) {
-      wakeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      wakeAudioNode = wakeAudioCtx.createOscillator();
-      const gain = wakeAudioCtx.createGain();
-      gain.gain.value = 0.00001; // near-silent
-      wakeAudioNode.connect(gain);
-      gain.connect(wakeAudioCtx.destination);
-      wakeAudioNode.start();
-    } else if (wakeAudioCtx.state === 'suspended') {
-      await wakeAudioCtx.resume();
-    }
-  } catch(e) {}
-}
-
-async function releaseWakeLock() {
-  try { if (wakeLock && !wakeLock.released) await wakeLock.release(); } catch(e) {}
-  wakeLock = null;
-  try { wakeVideo?.pause(); } catch(e) {}
-  try { if (wakeAudioCtx?.state === 'running') await wakeAudioCtx.suspend(); } catch(e) {}
-}
-
+// ===== WAKE LOCK =====
 async function toggleWakeLock() {
-  if (settings.wakeLockOn) await acquireWakeLock();
-  else await releaseWakeLock();
-}
-
-// ===== COUNTDOWN BEFORE AUTO =====
-let countdownTimer = null;
-let countdownVal = 3;
-
-function startCountdown(callback) {
-  const overlay = document.getElementById('countdownOverlay');
-  const numEl = document.getElementById('cdNumber');
-  overlay.classList.add('show');
-
-  let val = 3;
-
-  function tick() {
-    numEl.style.animation = 'none';
-    void numEl.offsetWidth;
-    numEl.style.animation = 'cdPop 1s ease forwards';
-
-    if (val > 0) {
-      numEl.textContent = val;
-      numEl.style.color = '#4fc3f7';
-      numEl.style.textShadow = '0 0 60px rgba(79,195,247,0.5)';
-      playCountdownBeep(val);
-      val--;
-      countdownTimer = setTimeout(tick, 1000);
-    } else {
-      numEl.textContent = 'GO!';
-      numEl.style.color = 'var(--green)';
-      numEl.style.textShadow = '0 0 60px rgba(0,230,118,0.6)';
-      playCountdownBeep(0);
-      countdownTimer = setTimeout(() => {
-        overlay.classList.remove('show');
-        countdownTimer = null;
-        callback();
-      }, 700);
-    }
+  if (settings.wakeLockOn) {
+    try {
+      wakeLock = await navigator.wakeLock?.request('screen');
+    } catch(e) {}
+  } else {
+    wakeLock?.release?.();
+    wakeLock = null;
   }
-  tick();
-}
-
-function cancelCountdown() {
-  clearTimeout(countdownTimer);
-  countdownTimer = null;
-  document.getElementById('countdownOverlay').classList.remove('show');
-  isAutoMode = false;
-  document.getElementById('autoBtn').classList.remove('on');
-  document.getElementById('autoBar').classList.remove('show');
-}
-
-function playCountdownBeep(n) {
-  try {
-    const ctx = getAudio();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = n === 0 ? 1046 : 660; // GO = high C, others = E5
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (n === 0 ? 0.4 : 0.15));
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + (n === 0 ? 0.5 : 0.2));
-  } catch(e) {}
 }
 
 // ===== TIMER =====
@@ -1327,125 +1039,19 @@ function updateTimerDisplay() {
   const m = Math.floor(sessionSeconds / 60);
   const s = sessionSeconds % 60;
   const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('timerDisplay').textContent = str;
   document.getElementById('statTime').textContent = str;
 }
 
-// ===== METRONOME =====
-let isMetronome = false;
-let metroTimer = null;
-let metroBeat = 0; // 0 = beat 1, 1 = beat 2
-
-function toggleMetronome() {
-  if (isMetronome) {
-    stopMetronome();
-  } else {
-    if (isAutoMode) {
-      isAutoMode = false;
-      clearInterval(autoTimer); clearTimeout(autoTimer);
-      autoTimer = null;
-      document.getElementById('autoBtn').classList.remove('on');
-      document.getElementById('autoBar').classList.remove('show');
-    }
-    isMetronome = true;
-    metroBeat = 0;
-    document.getElementById('metroBtn').style.background = 'rgba(168,85,247,0.15)';
-    document.getElementById('metroBtn').style.borderColor = '#a855f7';
-    document.getElementById('metroBtn').style.color = '#a855f7';
-    document.getElementById('metroBtn').textContent = '🎵 ON';
-    acquireWakeLock();
-    startSessionTimer();
-    scheduleMetro();
-  }
-}
-
-function scheduleMetro() {
-  if (!isMetronome) return;
-  const ctx = getAudio();
-  const interval = 60 / settings.autoRpm; // seconds per beat
-  let nextBeatTime = ctx.currentTime + 0.05; // start slightly ahead
-  let beat = 0; // 0=first, toggles
-
-  function schedule() {
-    if (!isMetronome) return;
-
-    // Schedule up to 100ms ahead
-    while (nextBeatTime < ctx.currentTime + 0.1) {
-      const isOne = beat === 0;
-      const t = nextBeatTime;
-
-      // Schedule audio at exact time
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.frequency.value = isOne ? 1200 : 800;
-      gain.gain.setValueAtTime(isOne ? 0.5 : 0.3, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-      osc.start(t);
-      osc.stop(t + 0.09);
-
-      // Schedule UI update at beat time
-      const delay = Math.max(0, (t - ctx.currentTime) * 1000);
-      const beatCopy = beat;
-      setTimeout(() => {
-        if (!isMetronome) return;
-        const one = beatCopy === 0;
-        document.getElementById('repNumber').textContent = one ? '1' : '2';
-        const btn = document.getElementById('tapBtn');
-        btn.style.borderColor = '#a855f7';
-        setTimeout(() => { btn.style.borderColor = ''; }, 80);
-        // Metro: no voice, beep only
-
-        if (!one) {
-          currentSet++;
-          totalReps += 2;
-          updateStatsOnly();
-          if (settings.targetSets > 0 && currentSet >= settings.targetSets) {
-            stopMetronome(); stopSessionTimer();
-            vib([200,100,200,100,400]); playDoneBeep();
-            document.getElementById('doneSub').textContent = 'ALL SETS DONE 🔥';
-            document.getElementById('doneOverlay').classList.add('show');
-          }
-          if (settings.targetTime > 0 && sessionSeconds >= settings.targetTime * 60) {
-            stopMetronome(); stopSessionTimer();
-            vib([200,100,200,100,400]); playDoneBeep();
-            document.getElementById('doneSub').textContent = 'TIME TARGET REACHED';
-            document.getElementById('doneOverlay').classList.add('show');
-          }
-        }
-      }, delay);
-
-      beat = beat === 0 ? 1 : 0;
-      nextBeatTime += interval;
-    }
-
-    metroTimer = setTimeout(schedule, 25); // check every 25ms
-  }
-
-  schedule();
-}
-
-function stopMetronome() {
-  isMetronome = false;
-  clearTimeout(metroTimer);
-  clearInterval(metroTimer);
-  metroTimer = null;
-  metroBeat = 0;
-  document.getElementById('metroBtn').style.background = '';
-  document.getElementById('metroBtn').style.borderColor = '#a855f7';
-  document.getElementById('metroBtn').style.color = '#a855f7';
-  document.getElementById('metroBtn').textContent = '🎵 METRO';
-}
-
-
 // ===== MAIN COUNT =====
 function handleTap() {
-  if (isResting || isAutoMode || isMetronome) return;
+  if (isResting) return;
   if (isStopped) {
     isStopped = false;
     sessionStartTime = Date.now();
   }
   startSessionTimer();
-  acquireWakeLock();
+  toggleWakeLock();
   doRep();
 }
 
@@ -1458,9 +1064,9 @@ function doRep() {
   triggerRipple();
   updateUI();
 
+  // Check set complete
   if (settings.targetReps > 0 && currentRep >= settings.targetReps) {
-    // Delay completeSet so last rep number renders and voice finishes
-    setTimeout(() => completeSet(), 300);
+    completeSet();
   }
 }
 
@@ -1481,32 +1087,28 @@ function triggerRipple() {
 
 function completeSet() {
   vib([100, 50, 200]);
-  clearInterval(autoTimer);
-  autoTimer = null;
-
+  const reps = currentRep;
   currentSet++;
-  setHistory.push(currentRep);
+  setHistory.push(reps);
 
+  // Check sets target
   if (settings.targetSets > 0 && currentSet >= settings.targetSets) {
-    finishSession('ALL SETS DONE 🔥');
+    setTimeout(() => finishSession('ALL SETS DONE 🔥'), 300);
     return;
   }
 
   currentRep = 0;
-  updateStatsOnly();
+  if (isAutoMode) {
+    clearInterval(autoTimer);
+    autoTimer = null;
+  }
 
   if (settings.restTime > 0) {
-    // Show "1" after short delay, then start rest overlay
-    setTimeout(() => {
-      document.getElementById('repNumber').textContent = '1';
-      startRest(settings.restTime);
-    }, 400);
+    startRest(settings.restTime);
   } else {
-    // rest=0: wait 1 interval then start next set
-    if (isAutoMode) {
-      const interval = (60 / settings.autoRpm) * 1000;
-      autoTimer = setTimeout(() => startAutoSet(true), interval);
-    }
+    // No rest - restart immediately
+    if (isAutoMode) startAuto();
+    updateUI();
   }
 }
 
@@ -1520,28 +1122,26 @@ function startRest(seconds) {
   restTimer = setInterval(() => {
     remaining--;
     document.getElementById('restCount').textContent = remaining;
-    if (remaining <= 0) skipRest();
+    if (remaining <= 0) {
+      skipRest();
+    }
   }, 1000);
+  updateUI();
 }
 
 function skipRest() {
   clearInterval(restTimer);
-  restTimer = null;
   isResting = false;
   document.getElementById('restOverlay').classList.remove('show');
-  if (isAutoMode) startAutoSet(true);
+  updateUI();
+  if (isAutoMode) startAuto();
 }
 
 // ===== AUTO MODE =====
 function toggleAuto() {
   if (isAutoMode) {
-    if (countdownTimer !== null) {
-      cancelCountdown();
-      return;
-    }
     isAutoMode = false;
     clearInterval(autoTimer);
-    clearTimeout(autoTimer);
     autoTimer = null;
     document.getElementById('autoBtn').classList.remove('on');
     document.getElementById('autoBar').classList.remove('show');
@@ -1551,144 +1151,43 @@ function toggleAuto() {
     document.getElementById('autoBtn').classList.add('on');
     document.getElementById('autoBar').classList.add('show');
     document.getElementById('autoBarText').textContent = `AUTO MODE — ${settings.autoRpm} RPM`;
-    acquireWakeLock();
-    startCountdown(() => {
-      startSessionTimer();
-      if (isAutoMode) startAutoSet(true);
-    });
+    startSessionTimer();
+    toggleWakeLock();
+    if (!isResting) startAuto();
   }
 }
 
-// immediate=true: fire rep 1 now then interval
-// immediate=false: just setInterval (used nowhere now, kept for safety)
-function startAutoSet(immediate = false) {
+function startAuto() {
   clearInterval(autoTimer);
-  clearTimeout(autoTimer);
-  autoTimer = null;
-
-  if (!isAutoMode || isStopped || isResting) return;
-
   const interval = (60 / settings.autoRpm) * 1000;
-
-  if (immediate) {
-    doRep();
-    // Only set interval if set not finished by that doRep
-    if (isAutoMode && !isStopped && !isResting && currentRep > 0) {
-      autoTimer = setInterval(() => {
-        if (!isAutoMode || isStopped || isResting) return;
-        doRep();
-      }, interval);
-    }
-  } else {
-    autoTimer = setInterval(() => {
-      if (!isAutoMode || isStopped || isResting) return;
-      doRep();
-    }, interval);
-  }
+  autoTimer = setInterval(() => {
+    if (!isResting && !isStopped) doRep();
+  }, interval);
 }
 
-// ===== PAUSE / RESUME =====
-let isPaused = false;
-
-function togglePause() {
-  if (isPaused) {
-    // RESUME
-    isPaused = false;
-    document.getElementById('pauseBtn').textContent = '⏸ PAUSE';
-    document.getElementById('pauseBtn').style.borderColor = '';
-    document.getElementById('pauseBtn').style.color = '';
-    if (isMetronome) {
-      startSessionTimer();
-      acquireWakeLock();
-      scheduleMetro();
-    } else if (isAutoMode) {
-      startSessionTimer();
-      acquireWakeLock();
-      startAutoSet(true);
-    }
-    updateUI();
-  } else {
-    // PAUSE
-    isPaused = true;
-    // Stop auto
-    clearInterval(autoTimer);
-    clearTimeout(autoTimer);
-    autoTimer = null;
-    clearInterval(restTimer);
-    restTimer = null;
-    isResting = false;
-    // Stop metro scheduler
-    clearTimeout(metroTimer);
-    clearInterval(metroTimer);
-    metroTimer = null;
-    stopSessionTimer();
-    window.speechSynthesis?.cancel();
-    document.getElementById('restOverlay').classList.remove('show');
-    document.getElementById('pauseBtn').textContent = '▶ RESUME';
-    document.getElementById('pauseBtn').style.borderColor = 'var(--green)';
-    document.getElementById('pauseBtn').style.color = 'var(--green)';
-    updateUI();
-  }
-}
-
+// ===== STOP / RESET =====
 function stopAll() {
-  isPaused = false;
   isAutoMode = false;
   isStopped = true;
   clearInterval(autoTimer);
-  clearTimeout(autoTimer);
   autoTimer = null;
   clearInterval(restTimer);
   restTimer = null;
   isResting = false;
-  stopMetronome();
   stopSessionTimer();
   window.speechSynthesis?.cancel();
   document.getElementById('autoBtn').classList.remove('on');
   document.getElementById('autoBar').classList.remove('show');
   document.getElementById('restOverlay').classList.remove('show');
-  document.getElementById('pauseBtn').textContent = '⏸ PAUSE';
-  document.getElementById('pauseBtn').style.borderColor = '';
-  document.getElementById('pauseBtn').style.color = '';
-  releaseWakeLock();
   updateUI();
 }
 
 function resetSet() {
-  isPaused = false;
-  document.getElementById('pauseBtn').textContent = '⏸ PAUSE';
-  document.getElementById('pauseBtn').style.borderColor = '';
-  document.getElementById('pauseBtn').style.color = '';
-  stopMetronome();
-  clearInterval(autoTimer);
-  autoTimer = null;
-  clearInterval(restTimer);
-  restTimer = null;
-  clearTimeout(countdownTimer);
-  countdownTimer = null;
-  isResting = false;
-  isAutoMode = false;
-  isStopped = false;
-  window.speechSynthesis?.cancel();
-  document.getElementById('autoBtn').classList.remove('on');
-  document.getElementById('autoBar').classList.remove('show');
-  document.getElementById('restOverlay').classList.remove('show');
-  document.getElementById('countdownOverlay').classList.remove('show');
-  stopSessionTimer();
   currentRep = 0;
-  currentSet = 0;
-  totalReps = 0;
-  sessionSeconds = 0;
-  sessionStartTime = null;
-  setHistory = [];
-  updateTimerDisplay();
   updateUI();
 }
 
 function resetAll() {
-  clearTimeout(countdownTimer);
-  countdownTimer = null;
-  document.getElementById('countdownOverlay').classList.remove('show');
   stopAll();
   currentRep = 0;
   currentSet = 0;
@@ -1698,6 +1197,7 @@ function resetAll() {
   setHistory = [];
   isStopped = false;
   document.getElementById('doneOverlay').classList.remove('show');
+  renderHistory();
   updateTimerDisplay();
   updateUI();
 }
@@ -1709,68 +1209,26 @@ function finishSession(msg) {
   playDoneBeep();
   document.getElementById('doneSub').textContent = msg;
   document.getElementById('doneOverlay').classList.add('show');
+  renderHistory();
 }
 
 // ===== UI UPDATE =====
 function updateUI() {
   const rep = settings.targetReps;
-  const tsets = settings.targetSets;
-  const ttime = settings.targetTime;
-
   document.getElementById('repNumber').textContent = currentRep;
+  document.getElementById('repOfTarget').textContent = rep > 0 ? rep : '∞';
+  document.getElementById('statSets').textContent = currentSet;
+  const tsets = settings.targetSets;
   document.getElementById('statTarget').textContent = rep > 0 ? rep : '∞';
   document.getElementById('statTotal').textContent = totalReps;
 
-  // Sets: show done / target if target set
-  document.getElementById('statSets').textContent = currentSet;
-  if (tsets > 0) {
-    document.getElementById('statSetsSep').style.display = '';
-    document.getElementById('statSetsTarget').style.display = '';
-    document.getElementById('statSetsTarget').textContent = tsets;
-  } else {
-    document.getElementById('statSetsSep').style.display = 'none';
-    document.getElementById('statSetsTarget').style.display = 'none';
-  }
-
-  // Time: show elapsed / target if target set
-  if (ttime > 0) {
-    document.getElementById('statTimeSep').style.display = '';
-    document.getElementById('statTimeTarget').style.display = '';
-    document.getElementById('statTimeTarget').textContent = ttime + 'm';
-  } else {
-    document.getElementById('statTimeSep').style.display = 'none';
-    document.getElementById('statTimeTarget').style.display = 'none';
-  }
-
-  // Lock tap button when auto or metro running
-  const tapBtn = document.getElementById('tapBtn');
-  if (isAutoMode || isMetronome) {
-    tapBtn.classList.add('locked');
-  } else {
-    tapBtn.classList.remove('locked');
-  }
-
-  // Progress bar
+  // Progress
   let pct = 0;
   if (rep > 0 && currentRep <= rep) pct = (currentRep / rep) * 100;
+  if (rep === 0) pct = 0;
   document.getElementById('progressFill').style.width = pct + '%';
-}
 
-function updateStatsOnly() {
-  const rep = settings.targetReps;
-  const tsets = settings.targetSets;
-  document.getElementById('statTarget').textContent = rep > 0 ? rep : '∞';
-  document.getElementById('statTotal').textContent = totalReps;
-  document.getElementById('statSets').textContent = currentSet;
-  if (tsets > 0) {
-    document.getElementById('statSetsSep').style.display = '';
-    document.getElementById('statSetsTarget').style.display = '';
-    document.getElementById('statSetsTarget').textContent = tsets;
-  } else {
-    document.getElementById('statSetsSep').style.display = 'none';
-    document.getElementById('statSetsTarget').style.display = 'none';
-  }
-  document.getElementById('progressFill').style.width = '100%';
+  renderHistory();
 }
 
 // ===== HISTORY =====
@@ -1804,10 +1262,10 @@ loadSettings();
 updateUI();
 updateTimerDisplay();
 
-// Resume wake lock on visibility change (browser releases it when tab is hidden)
+// Resume wake lock on visibility change
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && settings.wakeLockOn && !isStopped) {
-    acquireWakeLock();
+  if (document.visibilityState === 'visible' && settings.wakeLockOn && !wakeLock) {
+    toggleWakeLock();
   }
 });
 
@@ -1818,199 +1276,6 @@ document.addEventListener('touchend', e => {
   if (now - lastTap < 300) e.preventDefault();
   lastTap = now;
 }, { passive: false });
-
-// ===== PWA: INLINE MANIFEST + ICON =====
-(function setupPWA() {
-  // Generate icon as SVG → PNG via canvas
-  const iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-    <defs>
-      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#0a0a0a"/>
-        <stop offset="100%" stop-color="#1a0500"/>
-      </linearGradient>
-      <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#e0e0e0"/>
-        <stop offset="100%" stop-color="#bdbdbd"/>
-      </linearGradient>
-      <linearGradient id="suitGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#ff3d00"/>
-        <stop offset="100%" stop-color="#b71c1c"/>
-      </linearGradient>
-      <linearGradient id="wheelGrad" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#ff6d00"/>
-        <stop offset="100%" stop-color="#ffd600"/>
-      </linearGradient>
-      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="3" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <filter id="softglow" x="-30%" y="-30%" width="160%" height="160%">
-        <feGaussianBlur stdDeviation="8" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-
-    <!-- Background rounded square -->
-    <rect width="512" height="512" rx="80" fill="url(#bg)"/>
-
-    <!-- Speed streak lines behind athlete -->
-    <g stroke-linecap="round" opacity="0.5">
-      <line x1="20" y1="180" x2="130" y2="190" stroke="#ff3d00" stroke-width="6"/>
-      <line x1="10" y1="210" x2="120" y2="218" stroke="#ff6d00" stroke-width="4"/>
-      <line x1="15" y1="238" x2="110" y2="244" stroke="#ffd600" stroke-width="3"/>
-      <line x1="20" y1="262" x2="105" y2="266" stroke="#ff6d00" stroke-width="2.5"/>
-      <line x1="25" y1="284" x2="100" y2="287" stroke="#ff3d00" stroke-width="2"/>
-    </g>
-
-    <!-- Ground shadow -->
-    <ellipse cx="290" cy="420" rx="160" ry="12" fill="#ff3d00" opacity="0.12"/>
-
-    <!-- ===== ATHLETE SILHOUETTE — low tuck speed skating position ===== -->
-
-    <!-- BACK LEG — extended behind (power stroke) -->
-    <!-- Upper leg back -->
-    <path d="M 235 310 C 210 290 185 275 160 268 C 145 264 135 268 130 278"
-      fill="none" stroke="#cc2200" stroke-width="22" stroke-linecap="round"/>
-    <!-- Lower leg back — extended out -->
-    <path d="M 130 278 C 118 295 115 315 125 330"
-      fill="none" stroke="#b71c1c" stroke-width="18" stroke-linecap="round"/>
-
-    <!-- FRONT LEG — bent, weight bearing -->
-    <!-- Upper leg front -->
-    <path d="M 250 305 C 260 330 268 355 270 375"
-      fill="none" stroke="#e53935" stroke-width="24" stroke-linecap="round"/>
-    <!-- Lower leg front — vertical -->
-    <path d="M 270 375 C 272 390 278 400 292 405"
-      fill="none" stroke="#c62828" stroke-width="20" stroke-linecap="round"/>
-
-    <!-- TORSO — deeply bent forward (aero tuck) -->
-    <path d="M 185 255 C 200 240 225 232 255 228 C 275 225 295 228 310 238"
-      fill="none" stroke="url(#suitGrad)" stroke-width="38" stroke-linecap="round"/>
-
-    <!-- ARM — back arm extended behind for balance -->
-    <path d="M 215 248 C 195 255 170 258 148 252"
-      fill="none" stroke="#ff5722" stroke-width="14" stroke-linecap="round"/>
-
-    <!-- ARM — front arm tucked -->
-    <path d="M 265 232 C 280 228 295 230 305 240"
-      fill="none" stroke="#ff5722" stroke-width="14" stroke-linecap="round"/>
-
-    <!-- HELMET — aero teardrop speed skating helmet -->
-    <ellipse cx="320" cy="215" rx="38" ry="30" fill="#ff3d00"/>
-    <!-- Helmet visor -->
-    <path d="M 300 225 C 308 232 322 235 340 230" fill="none" stroke="#ffd600" stroke-width="4" stroke-linecap="round"/>
-    <!-- Helmet aero tail -->
-    <path d="M 352 210 C 368 205 378 210 372 222 C 366 230 354 228 348 220 Z" fill="#cc2200"/>
-    <!-- Helmet stripe -->
-    <path d="M 292 208 C 310 198 335 196 355 205" fill="none" stroke="#ffd600" stroke-width="3" stroke-linecap="round"/>
-
-    <!-- HEAD/NECK -->
-    <circle cx="308" cy="238" r="10" fill="#d4a574"/>
-    <path d="M 308 248 C 308 255 310 260 312 264" fill="none" stroke="#d4a574" stroke-width="8" stroke-linecap="round"/>
-
-    <!-- SUIT accent stripes -->
-    <path d="M 192 256 C 207 243 228 236 252 233" fill="none" stroke="#ffd600" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
-    <path d="M 198 268 C 213 256 232 250 254 248" fill="none" stroke="#ff6d00" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-
-    <!-- ===== BACK SKATE ===== -->
-    <!-- Boot back -->
-    <path d="M 112 278 C 100 282 90 285 88 292 L 148 305 C 152 298 145 285 130 278 Z" fill="#1a1a1a" stroke="#ff3d00" stroke-width="2"/>
-    <!-- Frame back -->
-    <path d="M 85 295 L 160 308 L 158 316 L 82 302 Z" fill="#222" stroke="#333" stroke-width="1"/>
-    <!-- Wheels back (3 visible) -->
-    <circle cx="98" cy="310" r="16" fill="#111" stroke="url(#wheelGrad)" stroke-width="4"/>
-    <circle cx="98" cy="310" r="7" fill="#0a0a0a"/>
-    <circle cx="98" cy="310" r="2.5" fill="#ff3d00"/>
-    <circle cx="122" cy="314" r="17" fill="#111" stroke="url(#wheelGrad)" stroke-width="4"/>
-    <circle cx="122" cy="314" r="8" fill="#0a0a0a"/>
-    <circle cx="122" cy="314" r="2.5" fill="#ff3d00"/>
-    <circle cx="147" cy="316" r="16" fill="#111" stroke="url(#wheelGrad)" stroke-width="4"/>
-    <circle cx="147" cy="316" r="7" fill="#0a0a0a"/>
-    <circle cx="147" cy="316" r="2.5" fill="#ff3d00"/>
-
-    <!-- ===== FRONT SKATE ===== -->
-    <!-- Boot front -->
-    <path d="M 272 400 C 258 400 248 404 246 412 L 340 418 C 342 410 330 400 310 400 Z" fill="#1a1a1a" stroke="#ff3d00" stroke-width="2.5"/>
-    <!-- Frame front -->
-    <path d="M 242 415 L 345 420 L 343 430 L 240 424 Z" fill="#222" stroke="#333" stroke-width="1.5"/>
-    <!-- Wheels front (4 visible) -->
-    <circle cx="260" cy="428" r="20" fill="#111" stroke="url(#wheelGrad)" stroke-width="5" filter="url(#glow)"/>
-    <circle cx="260" cy="428" r="9" fill="#0a0a0a"/>
-    <circle cx="260" cy="428" r="3" fill="#ff3d00"/>
-    <circle cx="288" cy="430" r="21" fill="#111" stroke="url(#wheelGrad)" stroke-width="5" filter="url(#glow)"/>
-    <circle cx="288" cy="430" r="10" fill="#0a0a0a"/>
-    <circle cx="288" cy="430" r="3" fill="#ff3d00"/>
-    <circle cx="317" cy="430" r="21" fill="#111" stroke="url(#wheelGrad)" stroke-width="5" filter="url(#glow)"/>
-    <circle cx="317" cy="430" r="10" fill="#0a0a0a"/>
-    <circle cx="317" cy="430" r="3" fill="#ff3d00"/>
-    <circle cx="344" cy="428" r="19" fill="#111" stroke="url(#wheelGrad)" stroke-width="5" filter="url(#glow)"/>
-    <circle cx="344" cy="428" r="9" fill="#0a0a0a"/>
-    <circle cx="344" cy="428" r="3" fill="#ff3d00"/>
-
-    <!-- Wheel motion blur arcs -->
-    <path d="M 248 412 C 244 420 244 436 250 444" fill="none" stroke="#ff6d00" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
-    <path d="M 332 412 C 336 420 336 436 330 444" fill="none" stroke="#ffd600" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
-
-  </svg>`;
-
-  // Convert SVG to PNG via canvas for apple-touch-icon
-  const canvas = document.createElement('canvas');
-  canvas.width = 512; canvas.height = 512;
-  const ctx = canvas.getContext('2d');
-  const img = new Image();
-  const svgBlob = new Blob([iconSVG], { type: 'image/svg+xml' });
-  const svgUrl = URL.createObjectURL(svgBlob);
-
-  img.onload = function() {
-    ctx.drawImage(img, 0, 0, 512, 512);
-    URL.revokeObjectURL(svgUrl);
-    const pngUrl = canvas.toDataURL('image/png');
-
-    // Set apple touch icon
-    document.getElementById('appleIcon').href = pngUrl;
-
-    // Build manifest with inline icon
-    const manifest = {
-      name: 'Rep Counter Pro',
-      short_name: 'RepPro',
-      description: 'Inline skate rep counter',
-      start_url: '.',
-      display: 'standalone',
-      background_color: '#0a0a0a',
-      theme_color: '#0a0a0a',
-      orientation: 'portrait',
-      icons: [
-        { src: pngUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-        { src: pngUrl, sizes: '192x192', type: 'image/png' }
-      ]
-    };
-    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-    const manifestUrl = URL.createObjectURL(manifestBlob);
-    document.getElementById('manifestLink').href = manifestUrl;
-  };
-  img.src = svgUrl;
-
-  // Register service worker inline via blob
-  if ('serviceWorker' in navigator) {
-    const swCode = `
-      const CACHE = 'repcounter-v1';
-      self.addEventListener('install', e => {
-        self.skipWaiting();
-      });
-      self.addEventListener('activate', e => {
-        e.waitUntil(self.clients.claim());
-      });
-      self.addEventListener('fetch', e => {
-        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-      });
-    `;
-    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl, { scope: '/' }).catch(() => {
-      // Blob SW scope might be restricted — silently fail, app still works
-    });
-  }
-})();
 </script>
 </body>
 </html>
